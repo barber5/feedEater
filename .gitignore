@@ -1,0 +1,11 @@
+run.log
+node_modules/
+logs/
+public/test/
+public/node_modules/
+dumb.rdb
+.DS_Store
+.env
+.log
+.grunt
+*.pem

@@ -1,0 +1,1 @@
+<link href="http://grist.org/feed/" rel="alternate" title="Grist RSS 2.0" type="application/rss+xml"/>

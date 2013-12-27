@@ -1,0 +1,24 @@
+[document] 10html 3body 13script 0navStr 	2
+[document] 10html 3body 31script 0navStr 	1
+[document] 10html 3body 5header-[u'clearfix'] 1div 3h1-[u'cufon'] 0a 0navStr 	1
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 11p 0span 0navStr 	8
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 15p 0navStr 	47
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 17p 0navStr 	59
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 19p 0span 0navStr 	44
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 1h2 0a 0navStr 	1
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 21p 0span 0navStr 	55
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 21p 0span 1a 0navStr 	1
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 21p 0span 2navStr 	2
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 23p 0span 0navStr 	53
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 25p 0span 0navStr 	190
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 27p 0span 0navStr 	21
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 29p 0span 0navStr 	74
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 31p 0span 0navStr 	29
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 31p 1span 0navStr 	18
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 31p 3span 0navStr 	49
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 33p 0span 0navStr 	7
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 35p 0span 0navStr 	32
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 37p 0span 0navStr 	1
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 41ol-[u'notes'] 3li-[u'note', u'reblog', u'tumblelog_waaaaaaaaaaaytoomuch', u'with_commentary'] 7blockquote 1a 0navStr 	6
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 7p 0navStr 	32
+[document] 10html 3body 7section-[u'clearfix'] 1div-[u'layout'] 3article 1div 9p 0span 0navStr 	24
