@@ -11,7 +11,6 @@ var mylogger = new(winston.Logger)({
 	]
 });
 
-
 if ( cluster.isMaster ) {
 	mylogger.info('master started: starting %d workers ', numCPUs);
 	cluster.on('exit', function(deadWorker, code, signal) {

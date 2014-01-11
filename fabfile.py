@@ -13,7 +13,7 @@ key_path = '~/git/appserver.pem'
 def init_prod():
     env.key_filename = key_path
     conn = boto.ec2.connect_to_region('us-west-1')    
-    for rsv in conn.get_all_instances(filters={'tag:Name': 'ricktest', 'instance-state-name':'running'}):
+    for rsv in conn.get_all_instances(filters={'tag:Name': 'feedtest', 'instance-state-name':'running'}):
         for instance in rsv.instances:            
             print instance.tags['Name']
             env.host_string = 'ubuntu@%s' % instance.ip_address    
@@ -48,4 +48,18 @@ def init_prod():
             sudo('cp ~/etheaConfig/proddb/pg_hba.conf /etc/postgresql/9.3/main/pg_hba.conf')
             sudo('cp ~/etheaConfig/proddb/postgresql.conf /etc/postgresql/9.3/main/postgresql.conf')
             sudo('/etc/init.d/postgresql restart')
-            
+
+@task
+def deploy(message='no message'):
+    local('git add .')
+    with settings(warn_only=True): 
+        local('git commit -m "%s"' % message)
+    local('git pull origin master && git push origin master')
+    env.key_filename = key_path
+    conn = boto.ec2.connect_to_region('us-west-1')    
+    for rsv in conn.get_all_instances(filters={'tag:Name': 'feedtest', 'instance-state-name':'running'}):
+        for instance in rsv.instances:                        
+            with cd('feedEater'):                
+                run('git fetch')
+                run('git reset --hard origin/master')
+                sudo('npm install')                
