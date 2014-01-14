@@ -16,7 +16,7 @@ def exceptionPrinter(e):
 class CursorWrap:
     def __init__(self, cfg):
         try:
-            self.conn = psycopg2.connect(database=cfg['database'], user=cfg['user'], host=cfg['host'], port=cfg['port'])
+            self.conn = psycopg2.connect(database=cfg['database'], user=cfg['user'], host=cfg['host'], port=cfg['port'], password=cfg['password'])
             self.cur = self.conn.cursor()
         except Exception as e:
             exceptionPrinter(e)
