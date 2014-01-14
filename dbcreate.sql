@@ -51,6 +51,7 @@ CREATE DATABASE feed_eater
        CONNECTION LIMIT = -1       
        TEMPLATE template0;
 \connect feed_eater
+
 CREATE EXTENSION pg_trgm;
 
 --
@@ -66,7 +67,7 @@ CREATE TABLE feeds (
     extraction_rule character varying(1024),
     pagination_rule character varying(1024),
     created timestamp without time zone,
-    updated timestamp without time zone,    
+    updated timestamp without time zone   
 );
 
 
@@ -82,7 +83,7 @@ CREATE TABLE posts (
     post_url character varying(255),
     content text,    
     created timestamp without time zone,
-    updated timestamp without time zone,    
+    updated timestamp without time zone
 );
 
 
