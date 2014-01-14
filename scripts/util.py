@@ -345,6 +345,26 @@ def getNavStrs(soup, die=True):
 def stringifySoup(soup):
 	return ' '.join(getNavStrs(soup)).strip()
 
+def stripIds(values):
+    result = {}    
+    for k,v in values.iteritems():
+        if k == '_id' or k == '__v':
+            continue
+        if type(v) == type([]):
+            newArr = []
+            for val in v:
+                if(type(val) == type({})):
+                    newArr.append(stripIds(val))
+                else:
+                    newArr.append(v)
+            result[k] = newArr
+
+        if type(v) == type({}):
+            result[k] = stripIds(v)
+        else:
+            result[k] = v
+    return result
+
 def postData(endpoint, values):
     values = stripIds(values)
     for k, v in values.iteritems():

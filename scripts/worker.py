@@ -8,12 +8,12 @@ import pprint
 
 @assets(assetManager=assetManager, dbCursor=dbCfg)
 @access(accessManager=AccessManager())
-def new_itemtype(userData, data, assets):        
+def new_feed(userData, data, assets):        
     newUUID = new_object(assets['dbCursor'], 'feeds', data)
     return {'feed_id': newUUID}
 
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
-SQLworker.register_task("new_itemtype", new_itemtype)
+SQLworker.register_task("new_feed", new_feed)
 
 SQLworker.work()
