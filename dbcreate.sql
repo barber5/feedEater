@@ -93,11 +93,13 @@ ALTER TABLE public.posts OWNER TO postgres;
 ALTER TABLE ONLY posts
     ADD CONSTRAINT posts_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY feeds
+    ADD CONSTRAINT feeds_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY posts
     ADD CONSTRAINT fk_posts FOREIGN KEY (feed_id) REFERENCES feeds(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY feeds
-    ADD CONSTRAINT feeds_pkey PRIMARY KEY (id);
+
 
 --
 -- TOC entry 2946 (class 0 OID 0)
