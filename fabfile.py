@@ -63,4 +63,8 @@ def deploy(message='no message'):
             with cd('feedEater'):                
                 run('git fetch')
                 run('git reset --hard origin/master')
-                sudo('npm install')                
+                sudo('npm install')     
+                sudo('stop app')           
+                sudo('stop worker')
+                sudo('start app')
+                sudo('start worker')
