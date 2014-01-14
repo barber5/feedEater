@@ -58,7 +58,8 @@ def deploy(message='no message'):
     env.key_filename = key_path
     conn = boto.ec2.connect_to_region('us-west-1')    
     for rsv in conn.get_all_instances(filters={'tag:Name': 'feedtest', 'instance-state-name':'running'}):
-        for instance in rsv.instances:                        
+        for instance in rsv.instances:     
+            env.host_string = 'ubuntu@%s' % instance.ip_address                   
             with cd('feedEater'):                
                 run('git fetch')
                 run('git reset --hard origin/master')
