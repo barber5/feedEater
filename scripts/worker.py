@@ -15,3 +15,5 @@ def new_itemtype(userData, data, assets):
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
 SQLworker.register_task("new_itemtype", new_itemtype)
+
+SQLworker.work()
