@@ -33,7 +33,7 @@ def findAndStore(url, name):
 			'name': name,
 			'feed_url': feed
 		}
-		postData(feed_endpoint, pd)
+		print postData(feed_endpoint, pd)
 
 if __name__ == "__main__":
-	print findFeed(sys.argv[1], sys.argv[2])
+	findAndStore(sys.argv[1], sys.argv[2])
