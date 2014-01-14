@@ -79,6 +79,16 @@ else {
 	// would remain being executed, however here
 	// we simply respond with an error page.
 
+	var Gearman = require("node-gearman");
+	var gearman = new Gearman(process.env.GEARMAN_MASTER || "localhost", process.env.GEARMAN_PORT || 4730, true);	
+	gearman.connect();
+
+	gearman.on("connect", function() {
+    	console.log("Connected to gearman server!");
+	});	
+
+	var feed = require('./routes/feed')(gearman)
+
 
 	app.use(function(err, req, res, next){
 		// we may use properties of the error object
@@ -94,6 +104,9 @@ else {
 	if ('development' == app.get('env')) {
 		app.use(express.errorHandler());
 	}
+
+
+	app.post('/feed', feed.new_feed)
 
 	app.get('/server_status', function(req, res) {
 		res.send({

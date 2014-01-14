@@ -1,6 +1,8 @@
 import sys, mechanize, re, feedparser
 from bs4 import BeautifulSoup
-from util import getHtmlFromUrl
+from util import getHtmlFromUrl, postData
+
+feed_endpoint = 'http://ec2-54-193-0-123.us-west-1.compute.amazonaws.com:3000/feed'
 
 def findFeedFromHtml(html):
 	soup = BeautifulSoup(html)
@@ -24,5 +26,14 @@ def findFeed(url):
 
 	return result
 
+def findAndStore(url, name):
+	feeds = findFeed(url)
+	for feed in feeds:
+		pd = {
+			'name': name,
+			'feed_url': feed
+		}
+		postData(feed_endpoint, pd)
+
 if __name__ == "__main__":
-	print findFeed(sys.argv[1])
+	print findFeed(sys.argv[1], sys.argv[2])
