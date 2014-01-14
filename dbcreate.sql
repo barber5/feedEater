@@ -40,7 +40,7 @@ SET default_with_oids = false;
 -- Name: communities; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
-DROP database if exists ethea;
+DROP database if exists feedEater;
 
 CREATE DATABASE feedEater
   WITH OWNER = postgres
