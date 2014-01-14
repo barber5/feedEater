@@ -40,9 +40,9 @@ SET default_with_oids = false;
 -- Name: communities; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
-DROP database if exists feedEater;
+DROP database if exists feed_eater;
 
-CREATE DATABASE feedEater
+CREATE DATABASE feed_eater
   WITH OWNER = postgres
        ENCODING = 'UTF8'
        TABLESPACE = pg_default
@@ -50,7 +50,7 @@ CREATE DATABASE feedEater
        LC_CTYPE = 'en_US.UTF-8'
        CONNECTION LIMIT = -1       
        TEMPLATE template0;
-\connect feedEater
+\connect feed_eater
 CREATE EXTENSION pg_trgm;
 
 --
