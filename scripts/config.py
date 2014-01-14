@@ -20,8 +20,8 @@ redisCfg = {
 
 dbCfg = {
     'database'  : getEnv('DATABASE', 'feed_eater'),
-    'password'  : '',
-    'user'      : getEnv('DB_USER', 'postgres'),
+    'password'  : 'feedpass',
+    'user'      : getEnv('DB_USER', 'feedman'),
     'host'      : getEnv('DB_HOST', 'localhost'),
     'port'      : getEnv('DB_PORT', 5432)
 }
