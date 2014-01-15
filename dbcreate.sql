@@ -66,6 +66,7 @@ CREATE TABLE feeds (
     blog_url character varying(255),
     extraction_rule character varying(1024),
     pagination_rule character varying(1024),
+    last_crawl timestamp without time zone,
     created timestamp without time zone,
     updated timestamp without time zone   
 );
