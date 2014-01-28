@@ -1,5 +1,5 @@
 import os
-
+domain = 'ec2-54-193-87-59.us-west-1.compute.amazonaws.com'
 default_page_size = 50
 default_autocomplete_page_size = 20
 
@@ -22,7 +22,7 @@ dbCfg = {
     'database'  : getEnv('DATABASE', 'feed_eater'),
     'password'  : 'feedpass',
     'user'      : getEnv('DB_USER', 'feedman'),
-    'host'      : getEnv('DB_HOST', 'localhost'),
+    'host'      : getEnv('DB_HOST', 'ec2-54-193-87-59.us-west-1.compute.amazonaws.com'),
     'port'      : getEnv('DB_PORT', 5432)
 }
 

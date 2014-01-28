@@ -1,8 +1,9 @@
 import sys, mechanize, re, feedparser
 from bs4 import BeautifulSoup
 from util import getHtmlFromUrl, postData
+from config import domain
 
-feed_endpoint = 'http://ec2-54-193-0-123.us-west-1.compute.amazonaws.com:3000/feed'
+feed_endpoint = 'http://{}:3000/feed'.format(domain)
 
 def findFeedFromHtml(html):
 	soup = BeautifulSoup(html)
@@ -31,9 +32,11 @@ def findAndStore(url, name):
 	for feed in feeds:
 		pd = {
 			'name': name,
-			'feed_url': feed
+			'feed_url': feed,
+			'blog_url': url
 		}
 		print postData(feed_endpoint, pd)
 
 if __name__ == "__main__":
+	# usage link and name
 	findAndStore(sys.argv[1], sys.argv[2])

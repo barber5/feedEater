@@ -63,7 +63,7 @@ CREATE TABLE feeds (
     id uuid NOT NULL,
     name character varying(255) NOT NULL,
     feed_url character varying(255) NOT NULL,
-    blog_url character varying(255),
+    blog_url character varying(255) UNIQUE NOT NULL,
     extraction_rule character varying(1024),
     pagination_rule character varying(1024),
     last_crawl timestamp without time zone,
@@ -76,12 +76,12 @@ ALTER TABLE public.feeds OWNER TO postgres;
 
 CREATE TABLE posts (
     id uuid NOT NULL,
-    title character varying(255) NOT NULL,
+    title character varying(255),
     feed_id uuid NOT NULL,
     byline character varying(1024),
     post_date timestamp without time zone,
     comment_feed character varying(255),
-    post_url character varying(255),
+    post_url character varying(255) UNIQUE,
     content text,    
     created timestamp without time zone,
     updated timestamp without time zone

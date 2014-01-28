@@ -20,6 +20,33 @@ module.exports = function(gearman) {
 				]
 			}		
 			jobber(requirements, res, gearman, 'new_feed')			
-		}	
+		},
+		crawl_feed: function(req, res) {
+			var requirements = {
+				queryObjects: validate.pq_QO(req),
+				requirements: [
+					validate.UUID_REQ('params', 'feed_id')
+				]
+			}
+			jobber(requirements, res, gearman, 'crawl_feed')
+		},
+		get_feed: function(req, res) {
+			var requirements = {
+				queryObjects: validate.pq_QO(req),
+				requirements: [
+					validate.UUID_REQ('params', 'feed_id')
+				]
+			}
+			jobber(requirements, res, gearman, 'get_feed')
+		},
+		all_feeds: function(req, res) {
+			var requirements = {
+				queryObjects: validate.q_QO(req),
+				requirements: [
+					validate.limit_REQ
+				]
+			}
+			jobber(requirements, res, gearman, 'all_feeds')
+		}
 	}
 }

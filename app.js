@@ -46,6 +46,7 @@ else {
 	// all environments
 	app.set('port', process.env.PORT || 3000);
 	app.set('views', __dirname + '/views');
+	app.engine('html', require('ejs').renderFile);
 	//app.engine('html', require('ejs').renderFile);
 	app.use(express.favicon());
 	app.use(express.static(path.join(__dirname, 'public')));
@@ -89,7 +90,6 @@ else {
 
 	var feed = require('./routes/feed')(gearman)
 
-
 	app.use(function(err, req, res, next){
 		// we may use properties of the error object
 		// here and next(err) appropriately, or if
@@ -105,8 +105,13 @@ else {
 		app.use(express.errorHandler());
 	}
 
-
+	app.get('/', function(req, res) {
+		res.render('index.html')
+	})
+	app.get('/feeds', feed.all_feeds)
 	app.post('/feed', feed.new_feed)
+	app.get('/feed/:feed_id', feed.get_feed)
+	app.post('/feed/:feed_id/crawl', feed.crawl_feed)
 
 	app.get('/server_status', function(req, res) {
 		res.send({

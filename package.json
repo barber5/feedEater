@@ -15,6 +15,7 @@
     "express-validator": "1.0.1",
     "validator": "2.1.0",    
     "knox": "0.8.8",
-    "mime": "1.2.11"
+    "mime": "1.2.11",
+    "ejs": "0.9.5"
   }
 }
