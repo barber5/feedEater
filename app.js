@@ -60,13 +60,7 @@ else {
 	// Since this is the last non-error-handling
 	// middleware use()d, we assume 404, as nothing else
 	// responded.
-
-	app.use(function(req, res, next){
-		// the status option, or res.statusCode = 404
-		// are equivalent, however with the option we
-		// get the "status" local available as well
-		res.render('404', { status: 404, url: req.url });
-	});
+	
 
 	// error-handling middleware, take the same form
 	// as regular middleware, however they require an
@@ -90,15 +84,7 @@ else {
 
 	var feed = require('./routes/feed')(gearman)
 
-	app.use(function(err, req, res, next){
-		// we may use properties of the error object
-		// here and next(err) appropriately, or if
-		// we possibly recovered from the error, simply next().
-		mylogger.error('500 handler fired for error: '+err)
-		mylogger.error(err.message)
-		mylogger.error(err.stack)
-		res.send('you just broke our server, man')
-	});
+	
 
 	// development only
 	if ('development' == app.get('env')) {
@@ -111,7 +97,8 @@ else {
 	app.get('/feeds', feed.all_feeds)
 	app.post('/feed', feed.new_feed)
 	app.get('/feed/:feed_id', feed.get_feed)
-	app.post('/feed/:feed_id/crawl', feed.crawl_feed)
+	app.post('/feed/:feed_id/init', feed.init_feed)
+	app.post('/feed/:feed_id/rules', feed.feed_rules)
 
 	app.get('/server_status', function(req, res) {
 		res.send({
