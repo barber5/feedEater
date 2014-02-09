@@ -1,11 +1,10 @@
 from util import SQLGearmanWorker
 from access import access, assets, AccessManager
 from util import assetManager, SQLGearmanWorker, getLimitOffset, joinResult
-from config import redisCfg, dbCfg, s3Cfg, default_page_size
+from config import redisCfg, dbCfg, s3Cfg, default_page_size, crawlCfg
 from db import new_object, do_exists, new_transaction, update_object, delete_object, new_relation, remove_relation
 from uuid import uuid4
-from postExtractor import extractPosts, getNextPage, extractPost
-import pprint
+import pprint, json
 import time
 from random import random
 
@@ -15,61 +14,30 @@ def new_feed(userData, data, assets):
     newUUID = new_object(assets['dbCursor'], 'feeds', data)
     return {'feed_id': newUUID}
 
-@assets(assetManager=assetManager, dbCursor=dbCfg)
+@assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
 @access(accessManager=AccessManager())
-def crawl_feed(userData, data, assets):     
+def init_feed(userData, data, assets):     
+	ch = assets['crawlHandler']
+	client = redis.Redis(connection_pool=assets['redisPool'])
 	cur = assets['dbCursor']
-	query = "SELECT extraction_rule, pagination_rule, blog_url, post_url FROM feeds left outer join posts on feeds.id=posts.feed_id where feeds.id=%s"	
-	cur.execute(query, [data['feed_id']])	
-	rows = cur.fetchall()
-	nameMapping = {
-		'blog': {
-			0: 'extraction_rule',
-			1: 'pagination_rule',
-			2: 'blog_url',
-			'posts': [{
-				3: 'post_url'
-			}]
-		}
-	}
-	dbResult = joinResult(rows, nameMapping)
-	postUrls = extractPosts(dbResult['blog']['extraction_rule'], dbResult['blog']['blog_url'])
-	newPosts = []
-	postsToGrab = set([])
-	for pu in postUrls:
-		if pu not in dbResult['blog']['posts']:
-			newPosts.append(pu)
-	lastPage = dbResult['blog']['blog_url']
-	tries = 0
-	tolerance = 2 # go two pages without seeing something new before giving up
-	while len(newPosts) > 0 and tries < tolerance:
-		if len(newPosts) == 0:
-			tries += 1
-		else:
-			tries = 0
-		postsToGrab = postsToGrab | set(newPosts)
-		newPosts = []
-		nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage)
-		if not nextPage:
-			break
-		postUrls = extractPosts(dbResult['blog']['extraction_rule'], nextPage)
-		for pu in postUrls:
-			if pu not in dbResult['blog']['posts'] and pu not in postsToGrab:
-				newPosts.append(pu)
-				postData = {
-					'feed_id': data['feed_id'],
-					'post_url': pu
-				}
-				new_object(cur, 'posts', postData)
-				print pu
-		lastPage = nextPage
-		print 'sleeping....'
-		time.sleep(5+20*random())
-		print 'awake!'
-	print postsToGrab
-
+	ch.addCrawl(data['feedId'], 'feed', client, cur)
 	return {}
 
+@assets(assetManager=assetManager, dbCursor=dbCfg)
+@access(accessManager=AccessManager())
+def feed_rules(userData, data, assets):
+	print data
+	feedId = data['feed_id']
+	del data['feed_id']	
+	pagination = data['pagination']
+	del data['pagination']
+	rulesData = {
+		'feed_id': feedId,
+		'pagination_rule': pagination,
+		'extraction_rule': json.dumps(data)
+	}
+	update_object(assets['dbCursor'], 'feeds', 'feed_id', rulesData)
+	return {}
 @assets(assetManager=assetManager, dbCursor=dbCfg)
 @access(accessManager=AccessManager())
 def all_feeds(userData, data, assets):     
@@ -93,10 +61,23 @@ def all_feeds(userData, data, assets):
 	result = joinResult(rows, nameMapping)
 	return result
 
+# crawl a single post for a feed
+@assets(assetManager=assetManager, dbCursor=dbCfg)
+@access(accessManager=AccessManager())
+def crawl_post(userData, data, assets):
+	None
+
+# crawl all posts that have been loaded in for a feed in the crawl_feed above
+@assets(assetManager=assetManager, dbCursor=dbCfg)
+@access(accessManager=AccessManager())
+def crawl_all_posts(userData, data, assets):
+	None
+
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
 SQLworker.register_task("new_feed", new_feed)
 SQLworker.register_task("all_feeds", all_feeds)
-SQLworker.register_task("crawl_feed", crawl_feed)
+SQLworker.register_task("init_feed", init_feed)
+SQLworker.register_task("feed_rules", feed_rules)
 
 SQLworker.work()

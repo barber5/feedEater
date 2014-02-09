@@ -1,11 +1,12 @@
-import mechanize, sys, traceback, urllib, urllib2, json
+import mechanize, sys, traceback, urllib, urllib2, json, random
 from bs4 import NavigableString, Comment
 import gearman, redis, os, sys, psycopg2, traceback, smtplib
 from access import AssetManager, AccessManager, AssetException
-import smtplib, json, datetime
+import smtplib, json, datetime, time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from config import default_page_size
+from urlparse import urlparse
 
 user_agent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'
 
@@ -59,50 +60,137 @@ class CursorWrap:
     def fetchSpecial(self, cfg):
         None
 
-class EmailWrap():
-    def __init__(self, cfg):
-        s = smtplib.SMTP(host=cfg['host'], port=cfg['port'])
-        s.ehlo()
-        s.starttls()
-        s.set_debuglevel(True)
-        s.login(cfg['email'], cfg['pass'])
-        self.smtp = s
 
-    def send_greeting(self, to, token):
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = "Welcome to Ethea"
-        msg['From'] = 'Ethea'
-        msg['To'] = 'New Ethean'
+class CrawlWrap():
+    def __init__(self, crawlHash, domainHash, crawlDelay, randomDelay):
+        self.crawlHash = crawlHash
+        self.domainHash = domainHash
+        self.crawlDelay = crawlDelay
+        self.randomDelay = randomDelay
 
-        # Create the body of the message (a plain-text and an HTML version).
-        text = "Hi!\nHere is the link you wanted:\nhttp://ec2-54-193-33-113.us-west-1.compute.amazonaws.com:3000/verify_email?email=%s&email_token=%s" % (to, token)
-        html = """\
-        <html>
-          <head></head>
-          <body>
-            <p>Hi!<br>               
-               Here is the <a href="http://ec2-54-193-33-113.us-west-1.compute.amazonaws.com:3000/verify_email?email=%s&email_token=%s">link</a> you wanted.
-            </p>
-          </body>
-        </html>
-        """ % (to, token)
+    def addCrawl(self, resourceId, resourceType, client, cursor):
+        cacheIt = {
+            'resourceId': resourceId,
+            'resourceType': resourceType
+        }
+        if resourceType == 'post':
+            query = "SELECT post_url FROM posts where id=%s;"
+        elif resourceType == 'feed':
+            query = "SELECT blog_url FROM feeds where id=%s;"
+        else:
+            raise AssetException("invalid resourceType in addCrawl")
+        cursor.execute(query, [resourceId])
+        rows = cur.fetchall()
+        nameMapping = {
+            'resource': {
+                0: 'url'
+            }
+        }
+        dbResult = joinResult(rows, nameMapping)
+        if dbResult['resource']['url']:
+            cacheIt['url'] = dbResult['resource']['url']
+            hn = urlparse(dbResult['resource']['url']).hostname
+            if hn:                
+                client.sadd(self.crawlHash+":"+hn, json.dumps(cacheIt))
+            else:
+                raise AssetException("Invalid url stored")
+        else:
+            raise AssetException("No url for resource")
+    
+    def doWork(self, client, cursor):
+        domains = client.hgetall(self.domainHash)
+        for name, value in domains.iteritems():
+            lastCrawl = int(value)
+            millis = int(round(time.time()))
+            if millis - lastCrawl > self.crawlDelay + randomDelay*random.random():
+                cacheIt = json.loads(client.spop(self.crawlHandler+":"+name))
+                if cacheIt['resourceType'] == 'post':
+                    self.crawlPost(cursor, cacheIt)                    
+                elif cacheIt['resourceType'] == 'feed':
+                    self.crawlFeed(client, cursor, cacheIt)
+                else:                    
+                    raise AssetException("invalid resourceType "+cacheIt['resourceType'])
+                client.hset(name, str(millis))
+                return
 
-        # Record the MIME types of both parts - text/plain and text/html.
-        part1 = MIMEText(text, 'plain')
-        part2 = MIMEText(html, 'html')
+    def crawlPost(self, cur, cacheIt):
+        query = "SELECT fe.extraction_rule, po.feed_id from posts p inner join feeds f on f.id=p.feed_id where po.id=%s"
+        cur.execute(query, [cacheIt['resourceId']])   
+        rows = cur.fetchall()
+        nameMapping = {
+            'blog': {
+                0: 'extraction_rule',
+                1: 'feed_id'                
+            }
+        }
+        dbResult = joinResult(rows, nameMapping)
+        post = extractPost(cacheIt['url'], json.loads(dbResult['extraction_rule']))
+        post['post_id'] = cacheIt['resourceId']
+        update_object(cur, 'posts', 'post_id', post)
 
-        # Attach parts into message container.
-        # According to RFC 2046, the last part of a multipart message, in this case
-        # the HTML message, is best and preferred.
-        msg.attach(part1)
-        msg.attach(part2)
-        self.smtp.sendmail(default_from_email, to, msg.as_string())
+    def crawlFeed(self, client, cur, cacheIt):        
+        query = "SELECT extraction_rule, pagination_rule, blog_url, post_url FROM feeds left outer join posts on feeds.id=posts.feed_id where feeds.id=%s"  
+        cur.execute(query, [cacheIt['resourceId']])   
+        rows = cur.fetchall()
+        nameMapping = {
+            'blog': {
+                0: 'extraction_rule',
+                1: 'pagination_rule',
+                2: 'blog_url',
+                'posts': [{
+                    3: 'post_url'
+                }]
+            }
+        }
+        dbResult = joinResult(rows, nameMapping)
+        nextPosts = {}
+        for po in dbResult['blog']['posts']:
+            nextPosts[po['post_url']] = False
+        dbResult['blog']['posts'] = nextPosts   
+        if not dbResult['blog']['extraction_rule'] or not dbResult['blog']['pagination_rule']:
+            return {"error": "extraction rules missing"}
+        postUrls = extractPosts(json.loads(dbResult['blog']['extraction_rule']), dbResult['blog']['blog_url'])
+        newPosts = []
+        postsToGrab = set([])
+        for pu in postUrls:
+            if pu not in dbResult['blog']['posts']:         
+                newPosts.append(pu)
+        lastPage = dbResult['blog']['blog_url']
+        tries = 0
+        tolerance = 2 # go two pages without seeing something new before giving up
+        while len(newPosts) > 0 or tries < tolerance:
+            if len(newPosts) == 0:
+                print 'no new posts!'
+                print 'tries: '+str(tries)
+                tries += 1
+            else:
+                tries = 0
+            postsToGrab = postsToGrab | set(newPosts)
+            newPosts = []
+            nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage)
+            if not nextPage:
+                break
+            postUrls = extractPosts(json.loads(dbResult['blog']['extraction_rule']), nextPage)
+            for pu in postUrls:
+                if pu not in dbResult['blog']['posts'] and pu not in postsToGrab:
+                    newPosts.append(pu)
+            postsToGrab = postsToGrab | set(newPosts)   
+            for pu in postsToGrab:  
+                postData = {
+                    'feed_id': cacheIt['resourceId'],
+                    'post_url': pu
+                }
+                print 'inserting {}'.format(pu)         
+                new_object(cur, 'posts', postData)                      
+                dbResult['blog']['posts'][pu] = True
+            postsToGrab = set([])
 
-    def send_resetpw(self, to, token):
-        None
+            lastPage = nextPage
+            print 'sleeping....'
+            time.sleep(self.crawlDelay+self.randomDelay*random.random())
+            print 'awake!'  
 
-    def cleanup(self):
-        self.smtp.quit()
+
 
 def redisPool(cfg):
     if 'host' not in cfg or 'port' not in cfg:
@@ -123,16 +211,19 @@ def s3Bucket(cfg):
     bucket = conn.get_bucket(bucketName)
     return bucket
 
-def email(cfg):
-    if 'host' not in cfg or 'port' not in cfg or 'email' not in cfg or 'pass' not in cfg:
-        raise AssetException()    
-    return EmailWrap(cfg)
+def crawlHandler(cfg):
+    if 'crawlHash' not in cfg or 'domainHash' not in cfg or 'crawlDelay' not in cfg or 'randomDelay' not in cfg:
+        raise AssetException()
+    cw = CrawlWrap(cfg['crawlHash'], cfg['domainHash'], cfg['crawlDelay'], cfg['randomDelay'])
+    return cw
+
 
 assetManager = AssetManager()
 assetManager.registerAssetFunction(redisPool, "redisPool")
 assetManager.registerAssetFunction(dbCursor, "dbCursor")
 assetManager.registerAssetFunction(s3Bucket, "s3Bucket")
-assetManager.registerAssetFunction(email, 'email')
+assetManager.registerAssetFunction(crawlHandler, "crawlHandler")
+
 
 
     
@@ -377,3 +468,80 @@ def postData(endpoint, values):
     req = urllib2.Request(endpoint, data)
     response = urllib2.urlopen(req)
     return response.read()
+
+def extractPost(url, post_rule):
+    result = {
+        'title': '',
+        'byline': '',
+        'post_date': '',        
+        'content': ''
+    }
+    html = getHtmlFromUrl(url)
+    soup = BeautifulSoup(html)
+    s_title = soup.select(post_rule['title'])
+    if s_title and len(s_title) > 0:
+        result['title'] = stringifySoup(s_title[0])
+    s_byline = soup.select(post_rule['byline'])
+    if s_byline and len(s_byline) > 0:
+        result['byline'] = stringifySoup(s_byline[0])
+    s_postdate = soup.select(post_rule['post_date'])
+    if s_postdate and len(s_postdate) > 0:
+        result['post_date'] = stringifySoup(s_postdate[0])
+    s_content = soup.select(post_rule['content'])
+    if s_content and len(s_content) > 0:
+        result['content'] = stringifySoup(s_content[0])
+    #todo add comments
+    print result
+    return result
+
+def extractPosts(post_rule, url):
+    result = []
+    html = getHtmlFromUrl(url)
+    soup = BeautifulSoup(html)
+    postListRule = post_rule['postlist']
+    postUrls = soup.select(postListRule)
+    return [urlparse.urljoin(url, pu.attrs['href']) for pu in postUrls]
+    '''
+    if postUrls:
+        for pu in postUrls:
+            href = pu.attrs['href']
+            result.append(extractPost(urlparse.urljoin(url, href), post_rule))
+            print 'sleeping'
+            time.sleep(10+20*random())
+            print 'awake'
+    if len(result) > 0:
+        page_s = soup.select(page_rule)
+        if page_s:
+            nextPage = urlparse.urljoin(url, page_s.attrs['href'])
+            nextPosts = extractPosts(post_rule, page_rule, nextPage)
+            result.extend(nextPosts)
+    return result
+    '''
+def getNextPage(page_rule, url):
+    html = getHtmlFromUrl(url)
+    soup = BeautifulSoup(html)
+    url_s = soup.select(page_rule)
+    if url_s:
+        try:
+            return url_s[0].attrs['href']
+        except Exception as e:
+            return None
+
+
+if __name__ == "__main__":
+    post_rule = {
+        'title':  'h1.entry-title',
+        'byline': 'span.author > span.fn',
+        'post_date': 'p.headline_meta > abbr.published',
+        'content': 'div.post > div.entry-content',
+        'postlist': 'h2.entry-title > a'
+    }
+    page_rule = 'p.previous > a'
+    posts = extractPosts(post_rule, sys.argv[1])
+    np = urlparse.urljoin(sys.argv[1], getNextPage(page_rule, sys.argv[1]))
+    posts.extend(extractPosts(post_rule, np))
+    np = urlparse.urljoin(np, getNextPage(page_rule, np))
+    posts.extend(extractPosts(post_rule, np))
+    print posts
+
+    

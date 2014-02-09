@@ -7,8 +7,7 @@ def extractPost(url, post_rule):
 	result = {
 		'title': '',
 		'byline': '',
-		'post_date': '',
-		'comments': [],
+		'post_date': '',		
 		'content': ''
 	}
 	html = getHtmlFromUrl(url)

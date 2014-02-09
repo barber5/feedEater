@@ -1,5 +1,5 @@
 import os
-domain = 'ec2-54-193-87-59.us-west-1.compute.amazonaws.com'
+domain = 'ec2-54-193-7-229.us-west-1.compute.amazonaws.com'
 default_page_size = 50
 default_autocomplete_page_size = 20
 
@@ -29,5 +29,12 @@ s3Cfg = {
     'access'    : getEnv('AWS_ACCESS_KEY_ID', 'AKIAJ2ZCFGJ7FR6QXSSQ'), 
     'secret'    : getEnv('AWS_SECRET_ACCESS_KEY', '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'),
     'bucketName': getEnv('S3_BUCKET', 'feedimages')
+}
+
+crawlCfg = {
+    'crawlHash': 'crawl',
+    'domainHash': 'domain',
+    'crawlDelay': 5,
+    'randomDelay': 15 # delay is crawlDelay + random(randomDelay)
 }
 
