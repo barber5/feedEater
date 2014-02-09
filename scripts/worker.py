@@ -17,10 +17,10 @@ def new_feed(userData, data, assets):
 
 @assets(assetManager=assetManager, dbCursor=dbCfg)
 @access(accessManager=AccessManager())
-def crawl_blog(userData, data, assets):     
+def crawl_feed(userData, data, assets):     
 	cur = assets['dbCursor']
-	query = "SELECT extraction_rule, pagination_rule, blog_url, post_url FROM feeds left outer join posts on feeds.id=posts.feed_id where id=%s"
-	cur.execute(query, data['feed_id'])
+	query = "SELECT extraction_rule, pagination_rule, blog_url, post_url FROM feeds left outer join posts on feeds.id=posts.feed_id where feeds.id=%s"	
+	cur.execute(query, [data['feed_id']])	
 	rows = cur.fetchall()
 	nameMapping = {
 		'blog': {
@@ -40,7 +40,13 @@ def crawl_blog(userData, data, assets):
 		if pu not in dbResult['blog']['posts']:
 			newPosts.append(pu)
 	lastPage = dbResult['blog']['blog_url']
-	while len(newPosts) > 0:
+	tries = 0
+	tolerance = 2 # go two pages without seeing something new before giving up
+	while len(newPosts) > 0 and tries < tolerance:
+		if len(newPosts) == 0:
+			tries += 1
+		else:
+			tries = 0
 		postsToGrab = postsToGrab | set(newPosts)
 		newPosts = []
 		nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage)
@@ -55,8 +61,11 @@ def crawl_blog(userData, data, assets):
 					'post_url': pu
 				}
 				new_object(cur, 'posts', postData)
+				print pu
 		lastPage = nextPage
+		print 'sleeping....'
 		time.sleep(5+20*random())
+		print 'awake!'
 	print postsToGrab
 
 	return {}
@@ -88,6 +97,6 @@ def all_feeds(userData, data, assets):
 SQLworker = SQLGearmanWorker(['localhost:4730'])
 SQLworker.register_task("new_feed", new_feed)
 SQLworker.register_task("all_feeds", all_feeds)
-SQLworker.register_task("crawl_blog", crawl_blog)
+SQLworker.register_task("crawl_feed", crawl_feed)
 
 SQLworker.work()

@@ -3,7 +3,6 @@ domain = 'ec2-54-193-87-59.us-west-1.compute.amazonaws.com'
 default_page_size = 50
 default_autocomplete_page_size = 20
 
-default_from_email = 'SMTPTEST123456789@gmail.com'
 
 def getEnv(key, default):
     if key in os.environ:
@@ -22,7 +21,7 @@ dbCfg = {
     'database'  : getEnv('DATABASE', 'feed_eater'),
     'password'  : 'feedpass',
     'user'      : getEnv('DB_USER', 'feedman'),
-    'host'      : getEnv('DB_HOST', 'ec2-54-193-87-59.us-west-1.compute.amazonaws.com'),
+    'host'      : getEnv('DB_HOST', domain),
     'port'      : getEnv('DB_PORT', 5432)
 }
 
@@ -32,9 +31,3 @@ s3Cfg = {
     'bucketName': getEnv('S3_BUCKET', 'feedimages')
 }
 
-emailCfg = {
-    'host'      : 'smtp.gmail.com',
-    'port'      : 587,
-    'email'     : default_from_email,
-    'pass'      : "ethea123"
-}

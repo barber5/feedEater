@@ -5,7 +5,7 @@ from access import AssetManager, AccessManager, AssetException
 import smtplib, json, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from config import default_from_email, default_page_size
+from config import default_page_size
 
 user_agent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'
 

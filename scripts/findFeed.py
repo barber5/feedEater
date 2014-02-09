@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 from util import getHtmlFromUrl, postData
 from config import domain
 
+domain = 'localhost'
+
 feed_endpoint = 'http://{}:3000/feed'.format(domain)
 
 def findFeedFromHtml(html):
