@@ -97,8 +97,24 @@ else {
 	app.get('/feeds', feed.all_feeds)
 	app.post('/feed', feed.new_feed)
 	app.get('/feed/:feed_id', feed.get_feed)
+	app.get('/feed/:feed_id/posts', feed.get_posts)
+	app.post('/feed/:feed_id/test', feed.test_rule)
 	app.post('/feed/:feed_id/init', feed.init_feed)
+	app.post('/feed/:feed_id/crawl_posts', feed.crawl_all)
 	app.post('/feed/:feed_id/rules', feed.feed_rules)
+	app.get('/allcats', feed.all_categories)
+	app.post('/post/:post_id/crawl', feed.crawl_post)
+	app.post('/work', feed.crawl_work)
+	app.get('/f/:feed_id', function(req, res) {
+		res.render('feed.html', {feed_id: req.params.feed_id})
+	})
+	app.get('/newfeed', function(req, res) {
+		res.render('newfeed.html')
+	})
+	app.get('/workadmin', function(req, res) {
+		res.render('work.html')
+	})
+	app.get('/jobs', feed.get_jobs)
 
 	app.get('/server_status', function(req, res) {
 		res.send({

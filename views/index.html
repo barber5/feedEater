@@ -1,22 +1,153 @@
-<!doctype html>
-<html class="no-js" lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Foundation | Welcome</title>
-        <link rel="stylesheet" href="css/foundation.css" />
-        <script src="js/vendor/modernizr.js"></script>
-    </head>
-    <body>            
-        <script src="js/vendor/jquery.js"></script>
-        <script src="js/foundation.min.js"></script>
-        <script>
-            $(document).foundation();
-            $.getJSON('/feeds', function(data) {
-                if(typeof(data.error) === 'undefined') {
-                    console.log(data)  
-                }        
-            })
-        </script>
-    </body>
+<!DOCTYPE html>
+<!--[if IE 8]>               <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+
+<head>
+   <meta charset="utf-8" />
+   <meta name="viewport" content="width=device-width" />
+   <title>The feedEater</title>
+   <link rel="stylesheet" href="/css/foundation.css" />    
+   <!-- Jquery UI stuff -->    
+   <script src="http://code.jquery.com/jquery-1.9.1.js"></script>    
+   <script src="/js/handlebars.js"></script>   
+</head>
+<body>
+   <%= include feed.ejs %>
+   <div class="row">
+      <div class="large-6 columns">
+         <h2>Feeds</h2>         
+         <hr />
+      </div>
+   </div>    
+   <div class="row">              
+      <div class="large-12 columns">                                                   
+         <script id="feeds_t" type="text/x-handlebars-template">
+            <table>
+            <thead>
+               <tr>
+                  <th width="200">Blog name</th>
+                  <th>Extraction rule</th>
+                  <th width="150">Pagination rule</th>
+                  <th width="150">Links</th>
+                  <th width="150">Crawl status</th>
+                  <th width="50">Control panel</th>
+               </tr>
+            </thead>
+            <tbody>
+               {{#feeds}}
+               <tr>
+                  <td><a href="/f/{{id}}">{{name}}</a></td>
+                  <td>{{extraction_rule}}</td>
+                  <td>{{pagination_rule}}</td>
+                  <td><a href="{{blog_url}}">home</a> - <a href="{{feed_url}}">feed</a></td>
+                  <td>{{crawled}} posts of {{total}} crawled</td>
+                  <td id="contain-{{id}}"><button class="tiny" id="cr-{{id}}">Load new posts</button> 
+
+                  </td>
+               </tr>
+               {{/feeds}}                    
+            </tbody>
+            </table>
+         </script>
+                
+         <div id="feeds"> </div>   
+         <a href="/newfeed"><button>Add new feed</button></a>
+            
+      </div>
+   </div>          
+   <script src="/js/foundation.min.js"></script>
+  
+  
+  
+  <!--
+  
+  <script src="js/foundation/foundation.js"></script>
+  
+  <script src="js/foundation/foundation.alerts.js"></script>
+  
+  <script src="js/foundation/foundation.clearing.js"></script>
+  
+  <script src="js/foundation/foundation.cookie.js"></script>
+  
+  <script src="js/foundation/foundation.dropdown.js"></script>
+  
+  <script src="js/foundation/foundation.forms.js"></script>
+  
+  <script src="js/foundation/foundation.joyride.js"></script>
+  
+  <script src="js/foundation/foundation.magellan.js"></script>
+  
+  <script src="js/foundation/foundation.orbit.js"></script>
+  
+  <script src="js/foundation/foundation.reveal.js"></script>
+  
+  <script src="js/foundation/foundation.section.js"></script>
+  
+  <script src="js/foundation/foundation.tooltips.js"></script>
+  
+  <script src="js/foundation/foundation.topbar.js"></script>
+  
+  <script src="js/foundation/foundation.interchange.js"></script>
+  
+  <script src="js/foundation/foundation.placeholder.js"></script>
+  
+  -->
+  
+<script>
+   $(document).foundation();
+</script>
+<script>
+   $( document ).ready(function() {   
+      $.getJSON('/feeds', function(data) {                
+         var source = $('#feeds_t').html()                
+         var template = Handlebars.compile(source)    
+         console.log(JSON.parse(data.result.feeds[0].extraction_rule))   
+         feeds = []
+         for(var i = 0; i < data.result.feeds.length; i++) {
+            extraction_rule = JSON.parse(data.result.feeds[i].extraction_rule)
+            feeds.push({
+               'name': data.result.feeds[i].name,
+               'blog_url': data.result.feeds[i].blog_url,
+               'feed_url': data.result.feeds[i].feed_url,
+               'pagination_rule': data.result.feeds[i].pagination_rule,
+               'id': data.result.feeds[i].id,
+               'content_rule': extraction_rule.content,
+               'byline_rule': extraction_rule.byline,
+               'date_rule': extraction_rule.post_date,
+               'postlist_rule': extraction_rule.postlist,
+               'title_rule': extraction_rule.title                        
+            })                    
+         }  
+         console.log(feeds)
+         $('#feeds').html(template({feeds: data.result.feeds}))    
+         for(var i = 0; i < data.result.feeds.length; i++) {
+            (function(idd) {                        
+               $('#cr-'+idd).click(function() {                            
+                  console.log("click handler for "+idd)
+                  $('#contain-'+idd).html()
+                  $('#contain-'+idd).html('<span class="label" id="load-{{id}}">Processing...</span>')                        
+                  $.post('/feed/'+idd+'/init',   function(data) {
+                     console.log(data);
+                     if(typeof(data.error) !== 'undefined') {
+                        $('#contain-'+idd).html('<span class="label alert" id="err-{{id}}">Error saving rule</span>')
+                     }
+                     else {
+                        $.post('/feed/'+idd+'/crawl_posts',   function(data) {
+                           if(typeof(data.error) !== 'undefined') {
+                              $('#contain-'+idd).html('<span class="label alert" id="err-{{id}}">Error saving rule</span>')
+                           }
+                           else {
+                              $('#contain-'+idd).html('<span class="label success" id="success-{{id}}">Success!</span>')
+                           }
+                        })                                    
+                     }          
+                  }) 
+               })
+            })(data.result.feeds[i].id)
+         }
+      })
+                    
+   })
+</script>
+</body>
 </html>

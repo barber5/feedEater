@@ -1,12 +1,13 @@
 import mechanize, sys, traceback, urllib, urllib2, json, random
-from bs4 import NavigableString, Comment
+from bs4 import NavigableString, Comment, BeautifulSoup
 import gearman, redis, os, sys, psycopg2, traceback, smtplib
 from access import AssetManager, AccessManager, AssetException
 import smtplib, json, datetime, time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from config import default_page_size
-from urlparse import urlparse
+import urlparse
+from db import new_object, update_object
 
 user_agent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'
 
@@ -68,7 +69,7 @@ class CrawlWrap():
         self.crawlDelay = crawlDelay
         self.randomDelay = randomDelay
 
-    def addCrawl(self, resourceId, resourceType, client, cursor):
+    def addCrawl(self, resourceId, resourceType, client, cur):
         cacheIt = {
             'resourceId': resourceId,
             'resourceType': resourceType
@@ -76,10 +77,10 @@ class CrawlWrap():
         if resourceType == 'post':
             query = "SELECT post_url FROM posts where id=%s;"
         elif resourceType == 'feed':
-            query = "SELECT blog_url FROM feeds where id=%s;"
+            query = "SELECT blog_url FROM feeds where id=%s;"            
         else:
             raise AssetException("invalid resourceType in addCrawl")
-        cursor.execute(query, [resourceId])
+        cur.execute(query, [resourceId])
         rows = cur.fetchall()
         nameMapping = {
             'resource': {
@@ -89,9 +90,14 @@ class CrawlWrap():
         dbResult = joinResult(rows, nameMapping)
         if dbResult['resource']['url']:
             cacheIt['url'] = dbResult['resource']['url']
-            hn = urlparse(dbResult['resource']['url']).hostname
+            hn = urlparse.urlparse(dbResult['resource']['url']).hostname
             if hn:                
                 client.sadd(self.crawlHash+":"+hn, json.dumps(cacheIt))
+                domain = client.hget(self.domainHash, hn)
+                if domain:
+                    None
+                else:
+                    client.hset(self.domainHash, hn, 0)
             else:
                 raise AssetException("Invalid url stored")
         else:
@@ -102,30 +108,37 @@ class CrawlWrap():
         for name, value in domains.iteritems():
             lastCrawl = int(value)
             millis = int(round(time.time()))
-            if millis - lastCrawl > self.crawlDelay + randomDelay*random.random():
-                cacheIt = json.loads(client.spop(self.crawlHandler+":"+name))
+            if millis - lastCrawl > self.crawlDelay + self.randomDelay*random.random():
+                nexty = client.spop(self.crawlHash+":"+name)
+                if not nexty:
+                    continue
+                cacheIt = json.loads(nexty)
                 if cacheIt['resourceType'] == 'post':
                     self.crawlPost(cursor, cacheIt)                    
                 elif cacheIt['resourceType'] == 'feed':
                     self.crawlFeed(client, cursor, cacheIt)
                 else:                    
                     raise AssetException("invalid resourceType "+cacheIt['resourceType'])
-                client.hset(name, str(millis))
-                return
+                client.hset(self.domainHash, name, str(millis))
+                cacheIt['domain'] = name
+                return cacheIt
+        return {'domain': "throttled, or no work to do"}
 
     def crawlPost(self, cur, cacheIt):
-        query = "SELECT fe.extraction_rule, po.feed_id from posts p inner join feeds f on f.id=p.feed_id where po.id=%s"
-        cur.execute(query, [cacheIt['resourceId']])   
-        rows = cur.fetchall()
+        query = "SELECT fe.extraction_rule, po.feed_id from posts po inner join feeds fe on fe.id=po.feed_id where po.id=%s"
+        cur.execute(query, [cacheIt['resourceId']]) 
+        print cur.mogrify(query, [cacheIt['resourceId']])   
+        rows = cur.fetchall()        
         nameMapping = {
             'blog': {
                 0: 'extraction_rule',
                 1: 'feed_id'                
             }
         }
-        dbResult = joinResult(rows, nameMapping)
-        post = extractPost(cacheIt['url'], json.loads(dbResult['extraction_rule']))
+        dbResult = joinResult(rows, nameMapping)        
+        post = extractPost(cacheIt['url'], json.loads(dbResult['blog']['extraction_rule']))
         post['post_id'] = cacheIt['resourceId']
+        print post
         update_object(cur, 'posts', 'post_id', post)
 
     def crawlFeed(self, client, cur, cacheIt):        
@@ -150,11 +163,17 @@ class CrawlWrap():
         if not dbResult['blog']['extraction_rule'] or not dbResult['blog']['pagination_rule']:
             return {"error": "extraction rules missing"}
         postUrls = extractPosts(json.loads(dbResult['blog']['extraction_rule']), dbResult['blog']['blog_url'])
+        print postUrls
         newPosts = []
         postsToGrab = set([])
         for pu in postUrls:
+            print pu
             if pu not in dbResult['blog']['posts']:         
                 newPosts.append(pu)
+            else:
+                print dbResult['blog']['posts'][pu]
+        print newPosts
+        postsToGrab = postsToGrab | set(newPosts)
         lastPage = dbResult['blog']['blog_url']
         tries = 0
         tolerance = 2 # go two pages without seeing something new before giving up
@@ -164,10 +183,9 @@ class CrawlWrap():
                 print 'tries: '+str(tries)
                 tries += 1
             else:
-                tries = 0
-            postsToGrab = postsToGrab | set(newPosts)
+                tries = 0            
             newPosts = []
-            nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage)
+            nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage)            
             if not nextPage:
                 break
             postUrls = extractPosts(json.loads(dbResult['blog']['extraction_rule']), nextPage)
@@ -175,6 +193,8 @@ class CrawlWrap():
                 if pu not in dbResult['blog']['posts'] and pu not in postsToGrab:
                     newPosts.append(pu)
             postsToGrab = postsToGrab | set(newPosts)   
+            
+            print postsToGrab
             for pu in postsToGrab:  
                 postData = {
                     'feed_id': cacheIt['resourceId'],
@@ -183,12 +203,32 @@ class CrawlWrap():
                 print 'inserting {}'.format(pu)         
                 new_object(cur, 'posts', postData)                      
                 dbResult['blog']['posts'][pu] = True
-            postsToGrab = set([])
+            postsToGrab = set([])        
+            print postsToGrab
 
             lastPage = nextPage
             print 'sleeping....'
             time.sleep(self.crawlDelay+self.randomDelay*random.random())
             print 'awake!'  
+    def getWorkStats(self, client, cur):
+        domains = client.hgetall(self.domainHash)    
+        result = []    
+        print domains
+        for name, value in domains.iteritems():
+            domainRes = {'posts': [], 'feeds': [], 'domain': name}
+            lastCrawl = int(value)
+            millis = int(round(time.time()))
+            delt = millis - lastCrawl
+            members = client.smembers(self.crawlHash+":"+name)
+            for mem in members:
+                cacheIt = json.loads(mem)
+                if cacheIt['resourceType'] == 'post':
+                     domainRes['posts'].append(cacheIt)                   
+                elif cacheIt['resourceType'] == 'feed':
+                    domainRes['feeds'].append(cacheIt)
+            result.append(domainRes)
+        return result
+                
 
 
 
@@ -489,7 +529,7 @@ def extractPost(url, post_rule):
         result['post_date'] = stringifySoup(s_postdate[0])
     s_content = soup.select(post_rule['content'])
     if s_content and len(s_content) > 0:
-        result['content'] = stringifySoup(s_content[0])
+        result['content'] = s_content.__repr__()
     #todo add comments
     print result
     return result

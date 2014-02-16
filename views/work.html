@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!--[if IE 8]>               <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>The feedEater</title>
+  <link rel="stylesheet" href="/css/foundation.css" />    
+  <!-- Jquery UI stuff -->    
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>    
+    <script src="/js/handlebars.js"></script>   
+</head>
+<body>
+    <%= include feed.ejs %>
+    
+      <div class="row">
+          <div class="large-6 columns">
+              <h2>Crawling administration</h2>         
+              <hr />
+          </div>
+      </div>    
+    
+    <div class="row">              
+        <div class="large-12 columns">
+            <script id="jobs_t" type="text/x-handlebars-template">
+                <div class="row">
+                <div class="large-6 columns">
+                <h3>{{count}} jobs in the queue</h3>
+                </div>
+                <div class="large-6 columns">
+                <button class="small" id="doWork">Process job</button>  
+                </div>
+                </div>
+                <div class="row">
+                <div class="large-12 columns">
+                <h3>Last result:</h3>
+                <span id="lastResult"></span>
+                
+                </div>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th width="200">Domain</th>
+                      <th>Work type</th>
+                      <th width="150">Type id</th>
+                      <th width="200">Url</th>                      
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {{#jobs}}
+                    <tr>
+                      <td>{{domain}}</td>
+                      <td>{{type}}</td>
+                      <td>{{id}}</td>
+                      <td><a href="{{url}}">{{url}}</a></td>
+                    </tr>
+                    {{/jobs}}
+                  </tbody>
+                </table>
+            </script>
+                
+            <div id="jobs"> </div>                         
+            
+        </div>
+    </div>          
+  <script src="/js/foundation.min.js"></script>
+  
+  
+  
+  <!--
+  
+  <script src="js/foundation/foundation.js"></script>
+  
+  <script src="js/foundation/foundation.alerts.js"></script>
+  
+  <script src="js/foundation/foundation.clearing.js"></script>
+  
+  <script src="js/foundation/foundation.cookie.js"></script>
+  
+  <script src="js/foundation/foundation.dropdown.js"></script>
+  
+  <script src="js/foundation/foundation.forms.js"></script>
+  
+  <script src="js/foundation/foundation.joyride.js"></script>
+  
+  <script src="js/foundation/foundation.magellan.js"></script>
+  
+  <script src="js/foundation/foundation.orbit.js"></script>
+  
+  <script src="js/foundation/foundation.reveal.js"></script>
+  
+  <script src="js/foundation/foundation.section.js"></script>
+  
+  <script src="js/foundation/foundation.tooltips.js"></script>
+  
+  <script src="js/foundation/foundation.topbar.js"></script>
+  
+  <script src="js/foundation/foundation.interchange.js"></script>
+  
+  <script src="js/foundation/foundation.placeholder.js"></script>
+  
+  -->
+  
+    <script>
+        $(document).foundation();
+    </script>
+    <script>
+        $( document ).ready(function() {           
+          $.getJSON('/jobs', function(data) {   
+            console.log(data)             
+            var source = $('#jobs_t').html()                
+            var template = Handlebars.compile(source)
+            var jobs = [];
+            for(var i = 0; i < data.result.jobs.length; i++) {
+              for(var j = 0; j < data.result.jobs[i].feeds.length; j++) {
+                var nextOne = {
+                  'domain': data.result.jobs[i].domain,
+                  'type': 'feed post update',
+                  'id': data.result.jobs[i].feeds[j].resourceId,
+                  'url': data.result.jobs[i].feeds[j].url
+                }
+                jobs.push(nextOne)
+              }
+              for(var j = 0; j < data.result.jobs[i].posts.length; j++) {
+                var nextOne = {
+                  'domain': data.result.jobs[i].domain,
+                  'type': 'post crawl',
+                  'id': data.result.jobs[i].posts[j].resourceId,
+                  'url': data.result.jobs[i].posts[j].url
+                }
+                jobs.push(nextOne)
+              }
+            }
+            console.log(jobs)
+            if(jobs.length == 0) {
+              $('#jobs').html("<h3>no jobs in queue</h3><br><br>")
+              $('#doWork').css('visibility', 'hidden')
+            }
+            else {
+              $('#jobs').html(template({jobs: jobs, count: jobs.length}))
+              $('#doWork').click(function() {
+              $('#doWork').css('visibility', 'hidden')
+              $.post('/work',   function(data) {
+                console.log(data)
+                $('#doWork').css('visibility', 'visible')
+                $('#lastResult').html(JSON.stringify(data))
+              })
+          }) 
+            }
+          })                                            
+            
+                    
+        })
+    </script>
+</body>
+</html>

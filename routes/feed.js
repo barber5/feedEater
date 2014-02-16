@@ -7,16 +7,7 @@ module.exports = function(gearman) {
 			var requirements = {
 				queryObjects: validate.bp_QO(req),
 				requirements: [
-					validate.name_REQ('body'),	
-					{
-						queryObject: 'body',
-						selector: ['feed_url'],
-						fieldName: 'feed_url',
-						constraints: [{
-							'name': 'url',
-							'value': ''
-						}]
-					},
+					validate.name_REQ('body'),						
 					{
 						queryObject: 'body',
 						selector: ['blog_url'],
@@ -31,6 +22,22 @@ module.exports = function(gearman) {
 			}		
 			jobber(requirements, res, gearman, 'new_feed')			
 		},
+		all_categories: function(req, res) {
+			var requirements = {
+				queryObjects: validate.bp_QO(req),
+				requirements: [
+				]
+			}		
+			jobber(requirements, res, gearman, 'all_categories')	
+		},
+		get_jobs: function(req, res) {
+			var requirements = {
+				queryObjects: validate.bp_QO(req),
+				requirements: [
+				]
+			}		
+			jobber(requirements, res, gearman, 'get_jobs')
+		},
 		init_feed: function(req, res) {
 			var requirements = {
 				queryObjects: validate.pq_QO(req),
@@ -39,6 +46,96 @@ module.exports = function(gearman) {
 				]
 			}
 			jobber(requirements, res, gearman, 'init_feed')
+		},
+		test_rule: function(req, res) {
+			var requirements = {
+				queryObjects: validate.bp_QO(req),
+				requirements: [								
+					{
+						queryObject: 'body',
+						selector: ['title'],
+						fieldName: 'title',
+						constraints: [{
+							'name': 'lengthMin',
+							'value': 1
+						}]
+					},
+					{
+						queryObject: 'body',
+						selector: ['byline'],
+						fieldName: 'byline',
+						constraints: [{
+							'name': 'lengthMin',
+							'value': 1
+						}]
+					},
+					{
+						queryObject: 'body',
+						selector: ['post_date'],
+						fieldName: 'post_date',
+						constraints: [{
+							'name': 'lengthMin',
+							'value': 1
+						}]
+					},
+					{
+						queryObject: 'body',
+						selector: ['content'],
+						fieldName: 'content',
+						constraints: [{
+							'name': 'lengthMin',
+							'value': 1
+						}]
+					},
+					{
+						queryObject: 'body',
+						selector: ['pagination'],
+						fieldName: 'pagination',
+						constraints: [{
+							'name': 'lengthMin',
+							'value': 1
+						}]
+					},
+					{
+						queryObject: 'body',
+						selector: ['postlist'],
+						fieldName: 'postlist',
+						constraints: [{
+							'name': 'lengthMin',
+							'value': 1
+						}]
+					},
+					validate.uuid_REQ('feed_id', 'params')
+				]
+			}		
+			jobber(requirements, res, gearman, 'test_rule')			
+		},
+		get_posts: function(req, res) {
+			var requirements = {
+				queryObjects: validate.pq_QO(req),
+				requirements: [
+					validate.uuid_REQ('feed_id', 'params')
+				]
+			}
+			jobber(requirements, res, gearman, 'get_posts')
+		},
+		crawl_all: function(req, res) {
+			var requirements = {
+				queryObjects: validate.pq_QO(req),
+				requirements: [
+					validate.uuid_REQ('feed_id', 'params')
+				]
+			}
+			jobber(requirements, res, gearman, 'crawl_all')
+		},
+		crawl_post: function(req, res) {
+			var requirements = {
+				queryObjects: validate.pq_QO(req),
+				requirements: [
+					validate.uuid_REQ('post_id', 'params')
+				]
+			}
+			jobber(requirements, res, gearman, 'crawl_post')
 		},
 		get_feed: function(req, res) {
 			var requirements = {
@@ -57,6 +154,14 @@ module.exports = function(gearman) {
 				]
 			}
 			jobber(requirements, res, gearman, 'all_feeds')
+		},
+		crawl_work: function(req, res) {
+			var requirements = {
+				queryObjects: validate.q_QO(req),
+				requirements: [					
+				]
+			}
+			jobber(requirements, res, gearman, 'crawl_work')
 		},
 		feed_rules: function(req, res) {
 			var requirements = {

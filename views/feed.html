@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!--[if IE 8]>               <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>The feedEater</title>
+  <link rel="stylesheet" href="/css/foundation.css" />    
+  <!-- Jquery UI stuff -->    
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>    
+    <script src="/js/handlebars.js"></script>   
+</head>
+<body>
+    <%= include feed.ejs %>
+    <script id="header_t" type="text/x-handlebars-template">
+      <div class="row">
+          <div class="large-6 columns">
+              <h2>{{name}}</h2>         
+              <hr />
+          </div>
+      </div>    
+    </script>
+    <div id="header"> </div>
+    <div class="row">              
+        <div class="large-12 columns">                                                   
+            <script id="posts_t" type="text/x-handlebars-template">
+                <table>
+                  <thead>
+                    <tr>
+                      <th width="200">Post id</th>
+                      <th>Post url</th>
+                      <th width="150">Title</th>
+                      <th width="150">Byline</th>
+                      <th width="150">Dateline</th>                      
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {{#posts}}
+                    <tr>
+                      <td>{{post_id}}</td>
+                      <td><a href="{{post_url}}">{{post_url}}</a></td>
+                      <td>{{title}}</td>
+                      <td>{{byline}}</td>
+                      <td>{{post_date}}</td>
+                        
+                      
+                    </tr>
+                    {{/posts}}                    
+                  </tbody>
+                </table>
+            </script>
+                
+            <div id="posts"> </div>               
+            
+        </div>
+    </div>          
+    <div class="row">              
+        <div class="large-12 columns">                                                   
+            <form>            
+              <div class="row">
+                <div class="large-4 columns">
+                  <label>pagination rule
+                    <input id="pagination" type="text" placeholder="large-4.columns" />
+                  </label>
+                </div>
+                <div class="large-4 columns">
+                  <label>content rule
+                    <input id="content" type="text" placeholder="large-4.columns" />
+                  </label>
+                </div>
+                <div class="large-4 columns">
+                  <label>byline rule
+                    <input id="byline" type="text" placeholder="large-4.columns" />
+                  </label>
+                </div>                
+              </div>                            
+              <div class="row">
+                <div class="large-4 columns">
+                  <label>title rule
+                    <input id="title" type="text" placeholder="large-4.columns" />
+                  </label>
+                </div>
+                <div class="large-4 columns">
+                  <label>postlist rule
+                    <input id="postlist" type="text" placeholder="large-4.columns" />
+                  </label>
+                </div>
+                <div class="large-4 columns">
+                  <label>date rule
+                    <input id="date" type="text" placeholder="large-4.columns" />
+                  </label>
+                </div>                
+              </div>              
+            </form> 
+            <button class="small" id="savebtn">Update</button>  
+            <span class="label" id="postLoading">Loading...</span>
+            <span class="label alert" id="postError">Error saving rule</span>
+            <span class="label success" id="postSuccess">Success!</span>
+            <script> $("#postLoading").css("visibility", "hidden"); </script>
+            <script> $("#postError").css("visibility", "hidden"); </script>
+            <script> $("#postSuccess").css("visibility", "hidden"); </script>
+            <div id="feeds"> </div>
+
+            <button class="small" id="testbtn">Test rule</button> 
+            <span id="lastResult"></span>
+            
+            
+        </div>
+    </div>          
+  <script src="/js/foundation.min.js"></script>
+  
+  
+  
+  <!--
+  
+  <script src="js/foundation/foundation.js"></script>
+  
+  <script src="js/foundation/foundation.alerts.js"></script>
+  
+  <script src="js/foundation/foundation.clearing.js"></script>
+  
+  <script src="js/foundation/foundation.cookie.js"></script>
+  
+  <script src="js/foundation/foundation.dropdown.js"></script>
+  
+  <script src="js/foundation/foundation.forms.js"></script>
+  
+  <script src="js/foundation/foundation.joyride.js"></script>
+  
+  <script src="js/foundation/foundation.magellan.js"></script>
+  
+  <script src="js/foundation/foundation.orbit.js"></script>
+  
+  <script src="js/foundation/foundation.reveal.js"></script>
+  
+  <script src="js/foundation/foundation.section.js"></script>
+  
+  <script src="js/foundation/foundation.tooltips.js"></script>
+  
+  <script src="js/foundation/foundation.topbar.js"></script>
+  
+  <script src="js/foundation/foundation.interchange.js"></script>
+  
+  <script src="js/foundation/foundation.placeholder.js"></script>
+  
+  -->
+  
+    <script>
+        $(document).foundation();
+    </script>
+    <script>
+        $( document ).ready(function() {
+            $.getJSON('/feed/<%= feed_id %>/posts', function(data) {
+              var source = $('#posts_t').html()
+              var template = Handlebars.compile(source)
+              $('#posts').html(template({posts: data.result.posts})) 
+            })                          
+            $.getJSON('/feed/<%= feed_id %>', function(data) {       
+              console.log(data)   
+              var source = $('#header_t').html()                
+              var template = Handlebars.compile(source)
+              console.log(data.result.feed.name)   
+              $('#header').html(template({name: data.result.feed.name}))  
+              $('#pagination').val(data.result.feed.pagination_rule)
+              er = JSON.parse(data.result.feed.extraction_rule)
+              $('#title').val(er.title)
+              $('#content').val(er.content)
+              $('#byline').val(er.byline)
+              $('#postlist').val(er.postlist)
+              $('#date').val(er.post_date)
+            })
+            $('#savebtn').click(function() {
+                $("#loading").css("visibility", "visible");
+                var request = {
+                  'title': $('#title').val(),
+                  'byline': $('#byline').val(),
+                  'post_date': $('#date').val(),
+                  'content': $('#content').val(),
+                  'pagination': $('#pagination').val(),
+                  'postlist': $('#postlist').val()
+                }
+                $.post( "/feed/<%=feed_id%>/rules", request, function( data ) {
+                  console.log(data)
+                  if(typeof(data.error) !== 'undefined') {
+                    $("#postLoading").css("visibility", "hidden");
+                    $("#postError").css("visibility", "visible")                      
+                  }
+                  else {
+                    $("#postLoading").css("visibility", "hidden");
+                    $("#postSuccess").css("visibility", "visible")
+                  }                  
+                });
+            })
+            $('#testbtn').click(function() {
+              var request = {
+                  'title': $('#title').val(),
+                  'byline': $('#byline').val(),
+                  'post_date': $('#date').val(),
+                  'content': $('#content').val(),
+                  'pagination': $('#pagination').val(),
+                  'postlist': $('#postlist').val()
+                }
+                console.log(request)
+                $.post( "/feed/<%=feed_id%>/test", request, function( data ) {
+                  console.log(data)
+                  $('#lastResult').html(JSON.stringify(data))
+                })
+            })
+                    
+        })
+    </script>
+</body>
+</html>
