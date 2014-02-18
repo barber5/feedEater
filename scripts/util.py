@@ -120,7 +120,7 @@ class CrawlWrap():
                             self.crawlPost(cursor, cacheIt)
                             client.srem(self.crawlHash+':'+name, mem)
                             return cacheIt
-                        elif cacheIt['resouceId'] == resId and cacheIt['resourceType'] == 'feed':
+                        elif cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'feed':
                             self.crawlFeed(client, cursor, cacheIt)
                             client.srem(self.crawlHash+':'+name, mem)
                             return cacheIt
