@@ -115,11 +115,11 @@ class CrawlWrap():
                 if resId:
                     members = client.smembers(self.crawlHandler+":"+name)
                     for mem in members:
-                    cacheIt = json.loads(mem)
-                    if cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'post':
-                         self.crawlPost(cursor, cacheIt)
-                    elif cacheIt['resouceId'] == resId and cacheIt['resourceType'] == 'feed':
-                        self.crawlFeed(client, cursor, cacheIt)
+                        cacheIt = json.loads(mem)
+                        if cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'post':
+                             self.crawlPost(cursor, cacheIt)
+                        elif cacheIt['resouceId'] == resId and cacheIt['resourceType'] == 'feed':
+                            self.crawlFeed(client, cursor, cacheIt)
                 else:
                     nexty = client.spop(self.crawlHash+":"+name)
                     if not nexty:
