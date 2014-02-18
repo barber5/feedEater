@@ -177,7 +177,7 @@ module.exports = function(gearman) {
 			var requirements = {
 				queryObjects: validate.b_QO(req),
 				requirements: [	
-					validate.uuid_REQ('resId', 'body', true)	
+					validate.uuid_REQ('resId', 'body', true)	,
 					{
 						queryObject: 'body',
 						selector: ['domain'],
