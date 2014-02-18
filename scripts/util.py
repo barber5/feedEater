@@ -113,24 +113,30 @@ class CrawlWrap():
             millis = int(round(time.time()))
             if millis - lastCrawl > self.crawlDelay + self.randomDelay*random.random():   
                 if resId:
-                    members = client.smembers(self.crawlHandler+":"+name)
+                    members = client.smembers(self.crawlHash+":"+name)
                     for mem in members:
                         cacheIt = json.loads(mem)
                         if cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'post':
-                             self.crawlPost(cursor, cacheIt)
+                            self.crawlPost(cursor, cacheIt)
+                            client.srem(self.crawlHash+':'+name, mem)
+                            return cacheIt
                         elif cacheIt['resouceId'] == resId and cacheIt['resourceType'] == 'feed':
                             self.crawlFeed(client, cursor, cacheIt)
+                            client.srem(self.crawlHash+':'+name, mem)
+                            return cacheIt
                 else:
-                    nexty = client.spop(self.crawlHash+":"+name)
-                    if not nexty:
-                        continue
-                    cacheIt = json.loads(nexty)
-                    if cacheIt['resourceType'] == 'post':
-                        self.crawlPost(cursor, cacheIt)                    
-                    elif cacheIt['resourceType'] == 'feed':
-                        self.crawlFeed(client, cursor, cacheIt)
-                    else:                    
-                        raise AssetException("invalid resourceType "+cacheIt['resourceType'])
+                    members = client.smembers(self.crawlHash+":"+name)
+                    for mem in members:
+                        cacheIt = json.loads(mem)
+                        if cacheIt['resourceType'] == 'post':
+                            self.crawlPost(cursor, cacheIt)
+                            client.srem(self.crawlHash+':'+name, mem)
+                            break
+                        elif cacheIt['resourceType'] == 'feed':
+                            self.crawlFeed(client, cursor, cacheIt)
+                            client.srem(self.crawlHash+':'+name, mem)
+                            break
+                                                            
                     client.hset(self.domainHash, name, str(millis))
                     cacheIt['domain'] = name
                     return cacheIt
