@@ -71,9 +71,9 @@ def crawl_work(userData, data, assets):
 		resId = data['resId']
 	if 'domain' in data:
 		domain = data['domain']
-	for i in range(15):
-		result.append(ch.doWork(client, cur, resId=resId, domain=domain))
-		time.sleep(.1)
+	
+	result.append(ch.doWork(client, cur, resId=resId, domain=domain))
+		
 	return {'work': result}
 
 
