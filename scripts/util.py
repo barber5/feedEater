@@ -566,9 +566,9 @@ def extractPost(url, post_rule, comments_rule):
         result['post_date'] = stringifySoup(s_postdate[0])
     s_content = soup.select(post_rule['content'])
     if s_content and len(s_content) > 0:
-        result['content'] = s_content.__repr__()
+        result['content'] = s_content.__repr__()    
     s_comments = soup.select(comments_rule)
-    if s_comments and len(s_comments) > 0:
+    if s_comments and len(s_comments) > 0 and len(comments_rule) > 0:
         result['comments'] = [{'comment': i.__repr__()} for i in s_comments]
     #todo add comments
     print result
