@@ -103,25 +103,37 @@ class CrawlWrap():
         else:
             raise AssetException("No url for resource")
     
-    def doWork(self, client, cursor):
+    def doWork(self, client, cursor, resId=None, domain=None):
         domains = client.hgetall(self.domainHash)
         for name, value in domains.iteritems():
+            if domain:
+                if name != domain:
+                    continue
             lastCrawl = int(value)
             millis = int(round(time.time()))
-            if millis - lastCrawl > self.crawlDelay + self.randomDelay*random.random():
-                nexty = client.spop(self.crawlHash+":"+name)
-                if not nexty:
-                    continue
-                cacheIt = json.loads(nexty)
-                if cacheIt['resourceType'] == 'post':
-                    self.crawlPost(cursor, cacheIt)                    
-                elif cacheIt['resourceType'] == 'feed':
-                    self.crawlFeed(client, cursor, cacheIt)
-                else:                    
-                    raise AssetException("invalid resourceType "+cacheIt['resourceType'])
-                client.hset(self.domainHash, name, str(millis))
-                cacheIt['domain'] = name
-                return cacheIt
+            if millis - lastCrawl > self.crawlDelay + self.randomDelay*random.random():   
+                if resId:
+                    members = client.smembers(self.crawlHandler+":"+name)
+                    for mem in members:
+                    cacheIt = json.loads(mem)
+                    if cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'post':
+                         self.crawlPost(cursor, cacheIt)
+                    elif cacheIt['resouceId'] == resId and cacheIt['resourceType'] == 'feed':
+                        self.crawlFeed(client, cursor, cacheIt)
+                else:
+                    nexty = client.spop(self.crawlHash+":"+name)
+                    if not nexty:
+                        continue
+                    cacheIt = json.loads(nexty)
+                    if cacheIt['resourceType'] == 'post':
+                        self.crawlPost(cursor, cacheIt)                    
+                    elif cacheIt['resourceType'] == 'feed':
+                        self.crawlFeed(client, cursor, cacheIt)
+                    else:                    
+                        raise AssetException("invalid resourceType "+cacheIt['resourceType'])
+                    client.hset(self.domainHash, name, str(millis))
+                    cacheIt['domain'] = name
+                    return cacheIt
         return {'domain': "throttled, or no work to do"}
 
     def crawlPost(self, cur, cacheIt):

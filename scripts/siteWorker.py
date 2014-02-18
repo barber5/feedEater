@@ -20,16 +20,6 @@ def new_category(userData, data, assets):
     newUUID = new_object(assets['dbCursor'], 'categories', data)    
     return {'category_id': newUUID}
 
-@assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
-@access(accessManager=AccessManager())
-def init_feed(userData, data, assets):     
-	print data
-	ch = assets['crawlHandler']
-	client = redis.Redis(connection_pool=assets['redisPool'])
-	cur = assets['dbCursor']
-	ch.addCrawl(data['feed_id'], 'feed', client, cur)
-	return {}
-
 @assets(assetManager=assetManager, dbCursor=dbCfg)
 @access(accessManager=AccessManager())
 def feed_rules(userData, data, assets):
@@ -108,55 +98,8 @@ def all_categories(userData, data, assets):
 	result = joinResult(rows, nameMapping)
 	return result
 
-# crawl a single post for a feed
-@assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
-@access(accessManager=AccessManager())
-def crawl_post(userData, data, assets):
-	print data
-	ch = assets['crawlHandler']
-	client = redis.Redis(connection_pool=assets['redisPool'])
-	cur = assets['dbCursor']
-	ch.addCrawl(data['post_id'], 'post', client, cur)
-	return {}
 
-
-
-# crawl all posts that have been loaded in for a feed in the crawl_feed above
-@assets(assetManager=assetManager, dbCursor=dbCfg, crawlHandler=crawlCfg, redisPool=redisCfg)
-@access(accessManager=AccessManager())
-def crawl_all(userData, data, assets):	
-	cur = assets['dbCursor']
-	client = redis.Redis(connection_pool=assets['redisPool'])
-	ch = assets['crawlHandler']
-	print data
-	query = "SELECT id FROM posts where feed_id=%s and title is null"	
-	cur.execute(query, [data['feed_id']])
-	rows = cur.fetchall()
-	nameMapping = {
-		'posts': [{
-			0: 'post_id'
-		}]
-	}
-	posts = joinResult(rows, nameMapping)	
-	for p in posts['posts']:
-		print 'adding to crawl queue'
-		print p
-		ch.addCrawl(p['post_id'], 'post', client, cur)
-	return {}
 	
-
-@assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
-@access(accessManager=AccessManager())
-def crawl_work(userData, data, assets):
-	print data
-	ch = assets['crawlHandler']
-	client = redis.Redis(connection_pool=assets['redisPool'])
-	cur = assets['dbCursor']
-	result = []
-	for i in range(15):
-		result.append(ch.doWork(client, cur))
-		time.sleep(.1)
-	return {'work': result}
 
 @assets(assetManager=assetManager, dbCursor=dbCfg, crawlHandler=crawlCfg, redisPool=redisCfg)
 @access(accessManager=AccessManager())
@@ -207,34 +150,6 @@ def get_post(userData, data, assets):
 	return posts
 
 
-@assets(assetManager=assetManager, dbCursor=dbCfg)
-@access(accessManager=AccessManager())
-def test_rule(userData, data, assets):
-	cur = assets['dbCursor']
-	query = "SELECT blog_url, extraction_rule, pagination_rule FROM feeds where id=%s"
-	cur.execute(query, [data['feed_id']])
-	rows = cur.fetchall()
-	blog_url = rows[0][0]
-	post_rule = {
-		'title': data['title'],
-		'byline': data['byline'],
-		'post_date': data['post_date'],
-		'content': data['content'],
-		'postlist': data['postlist']
-	}
-	page_rule = data['pagination']	
-	posts = extractPosts(post_rule, blog_url)
-	result = {}
-	result['homepage'] = posts
-	np = urlparse.urljoin(blog_url, getNextPage(page_rule, blog_url))
-	posts = (extractPosts(post_rule, np))	
-	result['page2'] = posts	
-	np = urlparse.urljoin(np, getNextPage(page_rule, np))
-	posts = extractPosts(post_rule, np)
-	result['page3'] = posts		
-	if len(posts) > 0:
-		result['typical_post'] = extractPost(posts[0], post_rule)
-	return result		
 
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
@@ -243,11 +158,9 @@ SQLworker.register_task("all_feeds", all_feeds)
 SQLworker.register_task("get_feed", get_feed)
 SQLworker.register_task("all_categories", all_categories)
 SQLworker.register_task("feed_rules", feed_rules)
-SQLworker.register_task("crawl_post", crawl_post)
 SQLworker.register_task("get_jobs", get_jobs)
 SQLworker.register_task("get_posts", get_posts)
 SQLworker.register_task("get_post", get_post)
-SQLworker.register_task("test_rule", test_rule)
 SQLworker.register_task("new_category", new_category)
 
 
