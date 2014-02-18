@@ -104,18 +104,18 @@
          console.log(JSON.parse(data.result.feeds[0].extraction_rule))   
          feeds = []
          for(var i = 0; i < data.result.feeds.length; i++) {
-            extraction_rule = JSON.parse(data.result.feeds[i].extraction_rule)
+            extraction_rule = JSON.parse(data.result.feeds[i].extraction_rule) || ""
             feeds.push({
                'name': data.result.feeds[i].name,
                'blog_url': data.result.feeds[i].blog_url,
                'feed_url': data.result.feeds[i].feed_url,
-               'pagination_rule': data.result.feeds[i].pagination_rule,
+               'pagination_rule': data.result.feeds[i].pagination_rule || "",
                'id': data.result.feeds[i].id,
-               'content_rule': extraction_rule.content,
-               'byline_rule': extraction_rule.byline,
-               'date_rule': extraction_rule.post_date,
-               'postlist_rule': extraction_rule.postlist,
-               'title_rule': extraction_rule.title                        
+               'content_rule': extraction_rule.content|| "",
+               'byline_rule': extraction_rule.byline|| "",
+               'date_rule': extraction_rule.post_date|| "",
+               'postlist_rule': extraction_rule.postlist|| "",
+               'title_rule': extraction_rule.title|| ""              
             })                    
          }  
          console.log(feeds)

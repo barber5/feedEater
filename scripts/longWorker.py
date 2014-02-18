@@ -238,20 +238,9 @@ def test_rule(userData, data, assets):
 
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
-SQLworker.register_task("new_feed", new_feed)
-SQLworker.register_task("all_feeds", all_feeds)
-SQLworker.register_task("get_feed", get_feed)
-SQLworker.register_task("all_categories", all_categories)
 SQLworker.register_task("init_feed", init_feed)
-SQLworker.register_task("feed_rules", feed_rules)
-SQLworker.register_task("crawl_post", crawl_post)
 SQLworker.register_task("crawl_all", crawl_all)
 SQLworker.register_task("crawl_work", crawl_work)
-SQLworker.register_task("get_jobs", get_jobs)
-SQLworker.register_task("get_posts", get_posts)
-SQLworker.register_task("get_post", get_post)
-SQLworker.register_task("test_rule", test_rule)
-SQLworker.register_task("new_category", new_category)
 
 
 SQLworker.work()

@@ -22,6 +22,15 @@ module.exports = function(gearman) {
 			}		
 			jobber(requirements, res, gearman, 'new_feed')			
 		},
+		new_category: function(req, res) {
+			var requirements = {
+				queryObjects: validate.bp_QO(req),
+				requirements: [
+					validate.name_REQ('body')
+				]
+			}		
+			jobber(requirements, res, gearman, 'new_category')			
+		},
 		all_categories: function(req, res) {
 			var requirements = {
 				queryObjects: validate.bp_QO(req),
@@ -118,6 +127,15 @@ module.exports = function(gearman) {
 				]
 			}
 			jobber(requirements, res, gearman, 'get_posts')
+		},
+		get_post: function(req, res) {
+			var requirements = {
+				queryObjects: validate.pq_QO(req),
+				requirements: [
+					validate.uuid_REQ('post_id', 'params')
+				]
+			}
+			jobber(requirements, res, gearman, 'get_post')
 		},
 		crawl_all: function(req, res) {
 			var requirements = {

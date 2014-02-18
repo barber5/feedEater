@@ -11,7 +11,7 @@
     "winston": "0.7.2",
     "async": "0.2.9",                    
     "connect": "2.7.8",
-    "node-gearman": "0.2.2",
+    "node-gearman": "0.2.2",    
     "express-validator": "1.0.1",
     "validator": "2.1.0",    
     "knox": "0.8.8",

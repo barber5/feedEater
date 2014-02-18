@@ -185,7 +185,9 @@ class CrawlWrap():
             else:
                 tries = 0            
             newPosts = []
-            nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage)            
+            nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage)        
+            print 'nextPage'*100
+            print nextPage    
             if not nextPage:
                 break
             postUrls = extractPosts(json.loads(dbResult['blog']['extraction_rule']), nextPage)

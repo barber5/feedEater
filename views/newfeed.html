@@ -40,14 +40,7 @@
                     <input id="feed_url" type="text" placeholder="rss feed url" />
                   </label>
                 </div>    
-                <div class="row">
-                  <div class="large-6 columns">
-                    <label>Categories</label>
-                    <input id="checkbox1" type="checkbox"><label for="checkbox1">Checkbox 1</label>
-                    <input id="checkbox2" type="checkbox"><label for="checkbox2">Checkbox 2</label>
-                  </div>
-                </div>            
-              </div>                                          
+                <div id="cats"></div>
             <button class="small" id="savebtn">Update</button>  
             <span class="label" id="postLoading">Loading...</span>
             <span class="label alert" id="postError">Error saving rule</span>
@@ -55,10 +48,19 @@
             <script> $("#postLoading").css("visibility", "hidden"); </script>
             <script> $("#postError").css("visibility", "hidden"); </script>
             <script> $("#postSuccess").css("visibility", "hidden"); </script>
-            <div id="feeds"> </div>                  
-            
+            <div id="feeds"> </div>                              
         </div>
     </div>          
+    <script id="jobs_t" type="text/x-handlebars-template">
+      <div class="row">
+        <div class="large-6 columns">
+          <label>Categories</label>
+          {{#cats}}
+          <input id="chk-{{id}}" type="checkbox"><label for="chk-{{id}}">{{name}}</label>
+          {{/cats}}          
+        </div>
+      </div>            
+    </script>                                
   <script src="/js/foundation.min.js"></script>
   
   
@@ -101,7 +103,13 @@
         $(document).foundation();
     </script>
     <script>
-        $( document ).ready(function() {                                      
+        $( document ).ready(function() {   
+            $.getJSON('/allcats', function(data) {
+                console.log(data)
+                  var source = $('#jobs_t').html()                
+                  var template = Handlebars.compile(source)
+                  $('#cats').html(template({cats: data.result.categories}))
+                })                                   
             $('#savebtn').click(function() {
                 $('#savebtn').css('visibility', 'hidden')
                 $("#loading").css("visibility", "visible");
@@ -109,10 +117,7 @@
                   'name': $('#name').val(),
                   'blog_url': $('#blog_url').val(),
                   'feed_url': $('#feed_url').val()                  
-                }
-                $.getJSON('/allcats', function(data) {
-                  console.log(data)
-                })
+                }                
                 $.post( "/feed", request, function( data ) {
                   console.log(data)
                   if(typeof(data.error) !== 'undefined') {
