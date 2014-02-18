@@ -56,7 +56,7 @@
                       <td>{{type}}</td>
                       <td>{{id}}</td>
                       <td><a href="{{url}}">{{url}}</a></td>
-                      <td><a href="{{url}}">{{url}}</a></td>
+                      <td><button class="small" id="crawl-{{id}}">Crawl now</td>
                     </tr>
                     {{/jobs}}
                   </tbody>
@@ -142,14 +142,33 @@
             }
             else {
               $('#jobs').html(template({jobs: jobs, count: jobs.length}))
+              for(var i = 0; i < jobs.length; i++) {
+                (function(idd) {
+                  console.log(idd)
+                  console.log(jobs[idd])
+                  console.log('#crawl-'+jobs[idd].id)
+                  $('#crawl-'+jobs[idd].id).click(function() {
+                    console.log("fuck you joe")
+                    $('#crawl-'+jobs[idd].id).css('visibility', 'hidden')
+                    var postData = {
+                      'resId': jobs[idd].id,
+                      'domain': jobs[idd].domain
+                    }  
+                    $.post('/work', postData, function(data) {                                            
+                      $('#lastResult').html(JSON.stringify(data))
+                    })  
+                  })
+                })(i)
+              }
+
               $('#doWork').click(function() {
-              $('#doWork').css('visibility', 'hidden')
-              $.post('/work',   function(data) {
-                console.log(data)
-                $('#doWork').css('visibility', 'visible')
-                $('#lastResult').html(JSON.stringify(data))
-              })
-          }) 
+                $('#doWork').css('visibility', 'hidden')
+                $.post('/work',   function(data) {
+                  console.log(data)
+                  $('#doWork').css('visibility', 'visible')
+                  $('#lastResult').html(JSON.stringify(data))
+                })
+              }) 
             }
           })                                            
             

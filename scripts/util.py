@@ -7,7 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from config import default_page_size
 import urlparse
-from db import new_object, update_object
+from db import new_object, update_object, delete_object, new_transaction
 
 user_agent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'
 
@@ -23,9 +23,12 @@ class CursorWrap:
         except Exception as e:
             exceptionPrinter(e)
             raise AssetException('could not get database connection')
-    def execute(self, stmt, replacement):
+    def execute(self, stmt, replacement=None):
         try:            
-            self.cur.execute(stmt, replacement)
+            if replacement:
+                self.cur.execute(stmt, replacement)
+            else:
+                self.cur.execute(stmt)
             self.conn.commit()
         except Exception as e:
             exceptionPrinter(e)
@@ -111,7 +114,8 @@ class CrawlWrap():
                     continue
             lastCrawl = int(value)
             millis = int(round(time.time()))
-            if millis - lastCrawl > self.crawlDelay + self.randomDelay*random.random():   
+            if millis - lastCrawl > self.crawlDelay + self.randomDelay*random.random():  
+                cacheIt = {} 
                 if resId:
                     members = client.smembers(self.crawlHash+":"+name)
                     for mem in members:
@@ -131,33 +135,45 @@ class CrawlWrap():
                         if cacheIt['resourceType'] == 'post':
                             self.crawlPost(cursor, cacheIt)
                             client.srem(self.crawlHash+':'+name, mem)
-                            break
+                            client.hset(self.domainHash, name, str(millis))
+                            cacheIt['domain'] = name
+                            return cacheIt
                         elif cacheIt['resourceType'] == 'feed':
                             self.crawlFeed(client, cursor, cacheIt)
                             client.srem(self.crawlHash+':'+name, mem)
-                            break
+                            client.hset(self.domainHash, name, str(millis))
+                            cacheIt['domain'] = name
+                            return cacheIt
                                                             
-                    client.hset(self.domainHash, name, str(millis))
-                    cacheIt['domain'] = name
-                    return cacheIt
+                            
         return {'domain': "throttled, or no work to do"}
 
     def crawlPost(self, cur, cacheIt):
-        query = "SELECT fe.extraction_rule, po.feed_id from posts po inner join feeds fe on fe.id=po.feed_id where po.id=%s"
+        query = "SELECT fe.extraction_rule, po.feed_id, fe.comments_rule from posts po inner join feeds fe on fe.id=po.feed_id where po.id=%s"
         cur.execute(query, [cacheIt['resourceId']]) 
         print cur.mogrify(query, [cacheIt['resourceId']])   
         rows = cur.fetchall()        
         nameMapping = {
             'blog': {
                 0: 'extraction_rule',
-                1: 'feed_id'                
+                1: 'feed_id',
+                2: 'comments_rule'             
             }
         }
-        dbResult = joinResult(rows, nameMapping)        
-        post = extractPost(cacheIt['url'], json.loads(dbResult['blog']['extraction_rule']))
+        dbResult = joinResult(rows, nameMapping)                
+        post = extractPost(cacheIt['url'], json.loads(dbResult['blog']['extraction_rule']), dbResult['blog']['comments_rule'])        
         post['post_id'] = cacheIt['resourceId']
+        qs = []
         print post
-        update_object(cur, 'posts', 'post_id', post)
+        
+        qs.append(delete_object(cur, 'comments', 'post_id', post['post_id'], returnQuery=True))
+        for comm in post['comments']:
+            comm['post_id'] = post['post_id']
+            qs.append(new_object(cur, 'comments', comm, returnQuery=True))
+
+        qs.append(update_object(cur, 'posts', 'post_id', post, returnQuery=True))
+
+        new_transaction(cur, qs)
 
     def crawlFeed(self, client, cur, cacheIt):        
         query = "SELECT extraction_rule, pagination_rule, blog_url, post_url FROM feeds left outer join posts on feeds.id=posts.feed_id where feeds.id=%s"  
@@ -194,7 +210,7 @@ class CrawlWrap():
         postsToGrab = postsToGrab | set(newPosts)
         lastPage = dbResult['blog']['blog_url']
         tries = 0
-        tolerance = 2 # go two pages without seeing something new before giving up
+        tolerance = 1 # go two pages without seeing something new before giving up
         while len(newPosts) > 0 or tries < tolerance:
             if len(newPosts) == 0:
                 print 'no new posts!'
@@ -529,12 +545,13 @@ def postData(endpoint, values):
     response = urllib2.urlopen(req)
     return response.read()
 
-def extractPost(url, post_rule):
+def extractPost(url, post_rule, comments_rule):
     result = {
         'title': '',
         'byline': '',
         'post_date': '',        
-        'content': ''
+        'content': '',
+        'comments': []
     }
     html = getHtmlFromUrl(url)
     soup = BeautifulSoup(html)
@@ -550,6 +567,9 @@ def extractPost(url, post_rule):
     s_content = soup.select(post_rule['content'])
     if s_content and len(s_content) > 0:
         result['content'] = s_content.__repr__()
+    s_comments = soup.select(comments_rule)
+    if s_comments and len(s_comments) > 0:
+        result['comments'] = [{'comment': i.__repr__()} for i in s_comments]
     #todo add comments
     print result
     return result

@@ -90,7 +90,8 @@ def test_rule(userData, data, assets):
 		'byline': data['byline'],
 		'post_date': data['post_date'],
 		'content': data['content'],
-		'postlist': data['postlist']
+		'postlist': data['postlist'],
+		'comment': data['comment']
 	}
 	page_rule = data['pagination']	
 	posts = extractPosts(post_rule, blog_url)
@@ -103,7 +104,7 @@ def test_rule(userData, data, assets):
 	posts = extractPosts(post_rule, np)
 	result['page3'] = posts		
 	if len(posts) > 0:
-		result['typical_post'] = extractPost(posts[0], post_rule)
+		result['typical_post'] = extractPost(posts[0], post_rule, post_rule['comment'])
 	return result		
 
 

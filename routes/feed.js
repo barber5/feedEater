@@ -80,6 +80,20 @@ module.exports = function(gearman) {
 					},
 					{
 						queryObject: 'body',
+						selector: ['comment'],
+						fieldName: 'comment',
+						isOptional: true,
+						constraints: []
+					},
+					{
+						queryObject: 'body',
+						selector: ['blogroll'],
+						fieldName: 'blogroll',
+						isOptional: true,
+						constraints: []
+					},
+					{
+						queryObject: 'body',
 						selector: ['post_date'],
 						fieldName: 'post_date',
 						constraints: [{
@@ -213,6 +227,20 @@ module.exports = function(gearman) {
 							'name': 'lengthMin',
 							'value': 1
 						}]
+					},
+					{
+						queryObject: 'body',
+						selector: ['comment'],
+						fieldName: 'comment',
+						isOptional: true,
+						constraints: []
+					},
+					{
+						queryObject: 'body',
+						selector: ['blogroll'],
+						fieldName: 'blogroll',
+						isOptional: true,
+						constraints: []
 					},
 					{
 						queryObject: 'body',

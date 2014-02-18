@@ -41,7 +41,7 @@
                   </label>
                 </div>    
                 <div id="cats"></div>
-            <button class="small" id="savebtn">Update</button>  
+            <button class="small" id="savebtn">Save</button>  
             <span class="label" id="postLoading">Loading...</span>
             <span class="label alert" id="postError">Error saving rule</span>
             <span class="label success" id="postSuccess">Success!</span>
@@ -104,34 +104,34 @@
     </script>
     <script>
         $( document ).ready(function() {   
-            $.getJSON('/allcats', function(data) {
-                console.log(data)
+            $.getJSON('/allcats', function(data) {                
                   var source = $('#jobs_t').html()                
                   var template = Handlebars.compile(source)
                   $('#cats').html(template({cats: data.result.categories}))
-                })                                   
-            $('#savebtn').click(function() {
-                $('#savebtn').css('visibility', 'hidden')
-                $("#loading").css("visibility", "visible");
-                var request = {
-                  'name': $('#name').val(),
-                  'blog_url': $('#blog_url').val(),
-                  'feed_url': $('#feed_url').val()                  
-                }                
-                $.post( "/feed", request, function( data ) {
-                  console.log(data)
-                  if(typeof(data.error) !== 'undefined') {
-                    $("#postLoading").css("visibility", "hidden");
-                    $("#postError").css("visibility", "visible")                      
-                  }
-                  else {
-                    $("#postLoading").css("visibility", "hidden");
-                    $("#postSuccess").css("visibility", "visible")
-                  }
+                  $('#savebtn').click(function() {
+                      $('#savebtn').css('visibility', 'hidden')
+                      $("#postLoading").css("visibility", "visible");
+                      var request = {
+                        'name': $('#name').val(),
+                        'blog_url': $('#blog_url').val(),
+                        'feed_url': $('#feed_url').val()                  
+                      }                
+                      $.post( "/feed", request, function( data ) {
+                        console.log(data)
+                        if(typeof(data.error) !== 'undefined') {
+                          $("#postLoading").css("visibility", "hidden");
+                          $("#postError").css("visibility", "visible")                      
+                        }
+                        else {
+                          $("#postLoading").css("visibility", "hidden");
+                          $("#postSuccess").css("visibility", "visible")
+                        }
 
+                        
+                      });
+                  })
+                })                                   
                   
-                });
-            })
                     
         })
     </script>

@@ -27,8 +27,7 @@
       </div>    
     </script>
     <div id="header"> </div>
-    <div class="row">              
-        <div class="large-12 columns">                                                   
+    
             <script id="posts_t" type="text/x-handlebars-template">
                 <table>
                   <thead>
@@ -54,12 +53,10 @@
                     {{/posts}}                    
                   </tbody>
                 </table>
-            </script>
-                
-            <div id="posts"> </div>               
+            </script>                                          
             
-        </div>
-    </div>          
+        
+    
     <div class="row">              
         <div class="large-12 columns">                                                   
             <form>            
@@ -96,7 +93,19 @@
                     <input id="date" type="text" placeholder="large-4.columns" />
                   </label>
                 </div>                
-              </div>              
+              </div>   
+              <div class="row">
+                <div class="large-4 columns">
+                  <label>comment rule (optional)
+                    <input id="comment" type="text" placeholder="large-4.columns" />
+                  </label>
+                </div>
+                <div class="large-4 columns">
+                  <label>blogroll rule (optional)
+                    <input id="blogroll" type="text" placeholder="large-4.columns" />
+                  </label>
+                </div>                
+              </div>                                       
             </form> 
             <button class="small" id="savebtn">Update</button>  
             <span class="label" id="postLoading">Loading...</span>
@@ -105,14 +114,20 @@
             <script> $("#postLoading").css("visibility", "hidden"); </script>
             <script> $("#postError").css("visibility", "hidden"); </script>
             <script> $("#postSuccess").css("visibility", "hidden"); </script>
-            <div id="feeds"> </div>
+            
 
             <button class="small" id="testbtn">Test rule</button> 
             <span id="lastResult"></span>
+            <div id="feeds"> </div>
             
             
         </div>
-    </div>          
+    </div>         
+    <div class="row">              
+      <div class="large-12 columns">  
+        <div id="posts"> </div> 
+      </div>
+    </div>
   <script src="/js/foundation.min.js"></script>
   
   
@@ -156,11 +171,10 @@
     </script>
     <script>
         $( document ).ready(function() {
-            $.getJSON('/feed/<%= feed_id %>', function(data) {       
-              console.log(data)   
+            $.getJSON('/feed/<%= feed_id %>', function(data) {                     
               var source = $('#header_t').html()                
-              var template = Handlebars.compile(source)
-              console.log(data.result.feed.name)   
+              var template = Handlebars.compile(source)              
+              console.log(data) 
               $('#header').html(template({name: data.result.feed.name, id: data.result.feed.id}))  
               $('#crall').click(function() {
                 $.post('/feed/'+data.result.feed.id+'/crawl_posts', function(data) {
@@ -168,6 +182,8 @@
                 })
               })
               $('#pagination').val(data.result.feed.pagination_rule || "")
+              $('#comment').val(data.result.feed.comments_rule || "")
+              $('#blogroll').val(data.result.feed.blogroll_rule || "")
               er = JSON.parse(data.result.feed.extraction_rule) || ""
               $('#title').val(er.title|| "")
               $('#content').val(er.content|| "")
@@ -189,7 +205,9 @@
                   'post_date': $('#date').val(),
                   'content': $('#content').val(),
                   'pagination': $('#pagination').val(),
-                  'postlist': $('#postlist').val()
+                  'postlist': $('#postlist').val(),
+                  'comment': $('#comment').val(),
+                  'blogroll': $('blogroll').val()
                 }
                 $.post( "/feed/<%=feed_id%>/rules", request, function( data ) {
                   console.log(data)
@@ -210,7 +228,9 @@
                   'post_date': $('#date').val(),
                   'content': $('#content').val(),
                   'pagination': $('#pagination').val(),
-                  'postlist': $('#postlist').val()
+                  'postlist': $('#postlist').val(),
+                  'comment': $('#comment').val(),
+                  'blogroll': $('#blogroll').val()
                 }
                 console.log(request)
                 $.post( "/feed/<%=feed_id%>/test", request, function( data ) {

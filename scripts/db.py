@@ -156,9 +156,11 @@ def remove_relation(cur, tableName, data, returnQuery=False, ignoreFields={}):
 def new_transaction(cursor, statmentList):
     query = "BEGIN; "
     for stmt in statmentList:               
-        query += '%s ' % stmt
-    query += "COMMIT;"            
-    cursor.execute(query, [])                
+        print len(stmt)
+        query += '\n\n%s \n\n' % stmt
+    query += "COMMIT;"    
+    print query          
+    cursor.execute(query)                
         
 
 def delete_object(cursor, tableName, columnName, columnValue, returnQuery=False):    

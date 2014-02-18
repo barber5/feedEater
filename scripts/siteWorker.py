@@ -28,11 +28,18 @@ def feed_rules(userData, data, assets):
 	del data['feed_id']	
 	pagination = data['pagination']
 	del data['pagination']
-	rulesData = {
-		'feed_id': feedId,
-		'pagination_rule': pagination,
-		'extraction_rule': json.dumps(data)
-	}
+	rulesData = {}
+	if 'blogroll' in data:
+		rulesData['blogroll_rule'] = data['blogroll']
+		del data['blogroll']
+	if 'comment' in data:		
+		rulesData['comments_rule'] = data['comment']
+		del data['comment']
+	rulesData['pagination_rule'] = pagination
+
+	rulesData['feed_id'] = feedId
+	rulesData['extraction_rule'] = json.dumps(data)		
+
 	update_object(assets['dbCursor'], 'feeds', 'feed_id', rulesData)
 	return {}
 @assets(assetManager=assetManager, dbCursor=dbCfg)
@@ -63,7 +70,7 @@ def all_feeds(userData, data, assets):
 @access(accessManager=AccessManager())
 def get_feed(userData, data, assets):
 	cur = assets['dbCursor']
-	query = "SELECT id, name, feed_url, blog_url, extraction_rule, pagination_rule, last_crawl, created, updated FROM feeds where id=%s";
+	query = "SELECT id, name, feed_url, blog_url, extraction_rule, pagination_rule, last_crawl, created, updated, comments_rule FROM feeds where id=%s";
 	cur.execute(query, [data['feed_id']])
 	rows = cur.fetchall()
 	nameMapping = {
@@ -76,7 +83,8 @@ def get_feed(userData, data, assets):
 			5: 'pagination_rule',
 			6: 'last_crawl',
 			7: 'created',
-			8: 'updated'
+			8: 'updated',
+			9: 'comments_rule'
 		}
 	}
 	result = joinResult(rows, nameMapping)
