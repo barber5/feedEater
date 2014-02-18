@@ -175,8 +175,19 @@ module.exports = function(gearman) {
 		},
 		crawl_work: function(req, res) {
 			var requirements = {
-				queryObjects: validate.q_QO(req),
-				requirements: [					
+				queryObjects: validate.b_QO(req),
+				requirements: [	
+					validate.uuid_REQ('resId', 'body', true)	
+					{
+						queryObject: 'body',
+						selector: ['domain'],
+						fieldName: 'domain',
+						isOptional: true,
+						constraints: [{
+							'name': 'lengthMin',
+							'value': 1
+						}]
+					}			
 				]
 			}
 			jobber(requirements, res, gearman, 'crawl_work')
