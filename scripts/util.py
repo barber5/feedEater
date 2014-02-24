@@ -113,38 +113,65 @@ class CrawlWrap():
                 if name != domain:
                     continue
             lastCrawl = int(value)
+            
             millis = int(round(time.time()))
-            if millis - lastCrawl > self.crawlDelay + self.randomDelay*random.random():  
+            since = millis - lastCrawl
+            needed = self.crawlDelay + self.randomDelay*random.random()
+            print '{} last crawled: {}, needs: {}    ----  {}'.format(name, since, needed, since > needed)
+            if since > needed:  
                 cacheIt = {} 
                 if resId:
                     members = client.smembers(self.crawlHash+":"+name)
-                    for mem in members:
+                    print members
+                    for mem in members:                        
                         cacheIt = json.loads(mem)
                         if cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'post':
-                            self.crawlPost(cursor, cacheIt)
                             client.srem(self.crawlHash+':'+name, mem)
-                            return cacheIt
+                            try:
+                                self.crawlPost(cursor, cacheIt)                            
+                                client.hset(self.domainHash, name, str(millis))
+                                cacheIt['domain'] = name
+                                return cacheIt
+                            except Exception as e:
+                                client.sadd(self.crawlHash+':'+name, mem)
+                                client.hset(self.domainHash, name, str(millis))
                         elif cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'feed':
-                            self.crawlFeed(client, cursor, cacheIt)
                             client.srem(self.crawlHash+':'+name, mem)
-                            return cacheIt
-                else:
+                            try:
+                                self.crawlFeed(client, cursor, cacheIt)
+                                client.hset(self.domainHash, name, str(millis))
+                                cacheIt['domain'] = name
+                                return cacheIt                                              
+                            except Exception as e:
+                                client.sadd(self.crawlHash+':'+name, mem)
+                                client.hset(self.domainHash, name, str(millis))
+                else:                                        
                     members = client.smembers(self.crawlHash+":"+name)
                     for mem in members:
                         cacheIt = json.loads(mem)
                         if cacheIt['resourceType'] == 'post':
-                            self.crawlPost(cursor, cacheIt)
                             client.srem(self.crawlHash+':'+name, mem)
-                            client.hset(self.domainHash, name, str(millis))
-                            cacheIt['domain'] = name
-                            return cacheIt
+                            try:
+                                self.crawlPost(cursor, cacheIt)                            
+                                client.hset(self.domainHash, name, str(millis))
+                                cacheIt['domain'] = name
+                                return cacheIt
+                            except Exception as e:
+                                client.sadd(self.crawlHash+':'+name, mem)
+                                client.hset(self.domainHash, name, str(millis))
+
                         elif cacheIt['resourceType'] == 'feed':
-                            self.crawlFeed(client, cursor, cacheIt)
                             client.srem(self.crawlHash+':'+name, mem)
-                            client.hset(self.domainHash, name, str(millis))
-                            cacheIt['domain'] = name
-                            return cacheIt
-                                                            
+                            try:
+                                self.crawlFeed(client, cursor, cacheIt)
+                                client.hset(self.domainHash, name, str(millis))
+                                cacheIt['domain'] = name
+                                return cacheIt                                              
+                            except Exception as e:
+                                client.sadd(self.crawlHash+':'+name, mem)
+                                client.hset(self.domainHash, name, str(millis))
+                            
+                                          
                             
         return {'domain': "throttled, or no work to do"}
 
@@ -545,7 +572,7 @@ def postData(endpoint, values):
     response = urllib2.urlopen(req)
     return response.read()
 
-def extractPost(url, post_rule, comments_rule):
+def extractPost(url, post_rule, comments_rule=None):
     result = {
         'title': '',
         'byline': '',
@@ -567,7 +594,7 @@ def extractPost(url, post_rule, comments_rule):
     s_content = soup.select(post_rule['content'])
     if s_content and len(s_content) > 0:
         result['content'] = s_content.__repr__()    
-    if len(comments_rule) > 0:
+    if comments_rule and len(comments_rule) > 0:
         s_comments = soup.select(comments_rule)
         if s_comments and len(s_comments) > 0:
             result['comments'] = [{'comment': i.__repr__()} for i in s_comments]

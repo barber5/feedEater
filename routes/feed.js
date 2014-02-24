@@ -206,6 +206,25 @@ module.exports = function(gearman) {
 			}
 			jobber(requirements, res, gearman, 'crawl_work')
 		},
+		crawl_work_much: function(req, res) {
+			var requirements = {
+				queryObjects: validate.b_QO(req),
+				requirements: [	
+					validate.uuid_REQ('resId', 'body', true)	,
+					{
+						queryObject: 'body',
+						selector: ['domain'],
+						fieldName: 'domain',
+						isOptional: true,
+						constraints: [{
+							'name': 'lengthMin',
+							'value': 1
+						}]
+					}			
+				]
+			}
+			jobber(requirements, res, gearman, 'crawl_work_much')
+		},
 		feed_rules: function(req, res) {
 			var requirements = {
 				queryObjects: validate.bp_QO(req),

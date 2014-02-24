@@ -25,12 +25,15 @@
         <div class="large-12 columns">
             <script id="jobs_t" type="text/x-handlebars-template">
                 <div class="row">
-                <div class="large-6 columns">
-                <h3>{{count}} jobs in the queue</h3>
-                </div>
-                <div class="large-6 columns">
-                <button class="small" id="doWork">Process job</button>  
-                </div>
+                  <div class="large-6 columns">
+                  <h3>{{count}} jobs in the queue</h3>
+                  </div>
+                  <div class="large-3 columns">
+                  <button class="small" id="doWork">Process job</button>  
+                  </div>
+                  <div class="large-3 columns">
+                  <button class="small" id="loopWork">Process continually</button>  
+                  </div>
                 </div>
                 <div class="row">
                 <div class="large-12 columns">
@@ -108,10 +111,10 @@
     <script>
         $(document).foundation();
     </script>
-    <script>
+    <script>      
         $( document ).ready(function() {           
           $.getJSON('/jobs', function(data) {   
-            console.log(data)             
+                      
             var source = $('#jobs_t').html()                
             var template = Handlebars.compile(source)
             var jobs = [];
@@ -135,7 +138,7 @@
                 jobs.push(nextOne)
               }
             }
-            console.log(jobs)
+            
             if(jobs.length == 0) {
               $('#jobs').html("<h3>no jobs in queue</h3><br><br>")
               $('#doWork').css('visibility', 'hidden')
@@ -143,12 +146,8 @@
             else {
               $('#jobs').html(template({jobs: jobs, count: jobs.length}))
               for(var i = 0; i < jobs.length; i++) {
-                (function(idd) {
-                  console.log(idd)
-                  console.log(jobs[idd])
-                  console.log('#crawl-'+jobs[idd].id)
-                  $('#crawl-'+jobs[idd].id).click(function() {
-                    console.log("fuck you joe")
+                (function(idd) {            
+                  $('#crawl-'+jobs[idd].id).click(function() {                    
                     $('#crawl-'+jobs[idd].id).css('visibility', 'hidden')
                     var postData = {
                       'resId': jobs[idd].id,
@@ -163,12 +162,24 @@
 
               $('#doWork').click(function() {
                 $('#doWork').css('visibility', 'hidden')
+                $('#loopWork').css('visibility', 'hidden')
                 $.post('/work',   function(data) {
                   console.log(data)
                   $('#doWork').css('visibility', 'visible')
+                  $('#loopWork').css('visibility', 'visible')
                   $('#lastResult').html(JSON.stringify(data))
                 })
               }) 
+              $('#loopWork').click(function() {
+                $('#doWork').css('visibility', 'hidden')
+                $('#loopWork').css('visibility', 'hidden')
+                $.post('/workmuch',   function(data) {
+                  console.log(data)
+                  $('#doWork').css('visibility', 'visible')
+                  $('#loopWork').css('visibility', 'visible')
+                  $('#lastResult').html(JSON.stringify(data))
+                })
+              })
             }
           })                                            
             

@@ -105,6 +105,7 @@ else {
 	app.get('/allcats', feed.all_categories)
 	app.post('/post/:post_id/crawl', feed.crawl_post)
 	app.post('/work', feed.crawl_work)
+	app.post('/workmuch', feed.crawl_work_much)
 	app.post('/category', feed.new_category)
 	app.get('/post/:post_id', feed.get_post)
 	app.get('/f/:feed_id', function(req, res) {

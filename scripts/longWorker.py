@@ -71,8 +71,33 @@ def crawl_work(userData, data, assets):
 		resId = data['resId']
 	if 'domain' in data:
 		domain = data['domain']
+
+
 	
 	result.append(ch.doWork(client, cur, resId=resId, domain=domain))
+		
+	return {'work': result}
+
+
+@assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
+@access(accessManager=AccessManager())
+def crawl_work_much(userData, data, assets):
+	print data
+	ch = assets['crawlHandler']
+	client = redis.Redis(connection_pool=assets['redisPool'])
+	cur = assets['dbCursor']
+	result = []
+	resId = None
+	domain = None
+	if 'resId' in data:
+		resId = data['resId']
+	if 'domain' in data:
+		domain = data['domain']
+
+	
+	for i in range(1000):		
+		result.append(ch.doWork(client, cur, resId=resId, domain=domain))
+		time.sleep(1)
 		
 	return {'work': result}
 
@@ -112,6 +137,7 @@ SQLworker = SQLGearmanWorker(['localhost:4730'])
 SQLworker.register_task("init_feed", init_feed)
 SQLworker.register_task("crawl_all", crawl_all)
 SQLworker.register_task("crawl_work", crawl_work)
+SQLworker.register_task("crawl_work_much", crawl_work_much)
 SQLworker.register_task("crawl_post", crawl_post)
 SQLworker.register_task("test_rule", test_rule)
 

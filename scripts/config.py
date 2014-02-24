@@ -34,7 +34,7 @@ s3Cfg = {
 crawlCfg = {
     'crawlHash': 'crawl',
     'domainHash': 'domain',
-    'crawlDelay': 5,
+    'crawlDelay': 30,
     'randomDelay': 15 # delay is crawlDelay + random(randomDelay)
 }
 
