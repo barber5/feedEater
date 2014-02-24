@@ -199,7 +199,7 @@ class CrawlWrap():
             qs.append(new_object(cur, 'comments', comm, returnQuery=True))
 
         qs.append(update_object(cur, 'posts', 'post_id', post, returnQuery=True))
-
+        print qs
         new_transaction(cur, qs)
 
     def crawlFeed(self, client, cur, cacheIt):        
