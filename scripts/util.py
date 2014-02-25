@@ -517,7 +517,7 @@ dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime)  o
 def getHtmlFromUrl(link):
 	br = mechanize.Browser()
 	br.addheaders = [('user-agent', user_agent)]
-    link = urllib.quote(link)
+	link = urllib.quote(link)
 	r = br.open(link)
 
 	html = r.read()
