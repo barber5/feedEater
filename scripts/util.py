@@ -133,6 +133,10 @@ class CrawlWrap():
                                 cacheIt['domain'] = name
                                 return cacheIt
                             except Exception as e:
+                                print >> sys.stderr, unicode(e)
+                                print >> sys.stderr, soup
+                                tb = traceback.format_exc()
+                                print >> sys.stderr, unicode(tb)
                                 client.sadd(self.crawlHash+':'+name, mem)
                                 client.hset(self.domainHash, name, str(millis))
                         elif cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'feed':
@@ -143,6 +147,10 @@ class CrawlWrap():
                                 cacheIt['domain'] = name
                                 return cacheIt                                              
                             except Exception as e:
+                                print >> sys.stderr, unicode(e)
+                                print >> sys.stderr, soup
+                                tb = traceback.format_exc()
+                                print >> sys.stderr, unicode(tb)
                                 client.sadd(self.crawlHash+':'+name, mem)
                                 client.hset(self.domainHash, name, str(millis))
                 else:                                        
@@ -157,6 +165,10 @@ class CrawlWrap():
                                 cacheIt['domain'] = name
                                 return cacheIt
                             except Exception as e:
+                                print >> sys.stderr, unicode(e)
+                                print >> sys.stderr, soup
+                                tb = traceback.format_exc()
+                                print >> sys.stderr, unicode(tb)
                                 client.sadd(self.crawlHash+':'+name, mem)
                                 client.hset(self.domainHash, name, str(millis))
 
@@ -168,6 +180,10 @@ class CrawlWrap():
                                 cacheIt['domain'] = name
                                 return cacheIt                                              
                             except Exception as e:
+                                print >> sys.stderr, unicode(e)
+                                print >> sys.stderr, soup
+                                tb = traceback.format_exc()
+                                print >> sys.stderr, unicode(tb)
                                 client.sadd(self.crawlHash+':'+name, mem)
                                 client.hset(self.domainHash, name, str(millis))
                             
