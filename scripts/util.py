@@ -132,13 +132,12 @@ class CrawlWrap():
                                 client.hset(self.domainHash, name, str(millis))
                                 cacheIt['domain'] = name
                                 return cacheIt
-                            except Exception as e:
-                                print >> sys.stderr, unicode(e)
-                                print >> sys.stderr, soup
-                                tb = traceback.format_exc()
-                                print >> sys.stderr, unicode(tb)
+                            except Exception as e:                                
                                 client.sadd(self.crawlHash+':'+name, mem)
                                 client.hset(self.domainHash, name, str(millis))
+                                print >> sys.stderr, unicode(e)                                
+                                tb = traceback.format_exc()
+                                print >> sys.stderr, unicode(tb)
                         elif cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'feed':
                             client.srem(self.crawlHash+':'+name, mem)
                             try:
@@ -146,13 +145,12 @@ class CrawlWrap():
                                 client.hset(self.domainHash, name, str(millis))
                                 cacheIt['domain'] = name
                                 return cacheIt                                              
-                            except Exception as e:
-                                print >> sys.stderr, unicode(e)
-                                print >> sys.stderr, soup
-                                tb = traceback.format_exc()
-                                print >> sys.stderr, unicode(tb)
+                            except Exception as e:                                
                                 client.sadd(self.crawlHash+':'+name, mem)
                                 client.hset(self.domainHash, name, str(millis))
+                                print >> sys.stderr, unicode(e)                                
+                                tb = traceback.format_exc()
+                                print >> sys.stderr, unicode(tb)
                 else:                                        
                     members = client.smembers(self.crawlHash+":"+name)
                     for mem in members:
@@ -164,13 +162,12 @@ class CrawlWrap():
                                 client.hset(self.domainHash, name, str(millis))
                                 cacheIt['domain'] = name
                                 return cacheIt
-                            except Exception as e:
-                                print >> sys.stderr, unicode(e)
-                                print >> sys.stderr, soup
-                                tb = traceback.format_exc()
-                                print >> sys.stderr, unicode(tb)
+                            except Exception as e:                                
                                 client.sadd(self.crawlHash+':'+name, mem)
                                 client.hset(self.domainHash, name, str(millis))
+                                print >> sys.stderr, unicode(e)                                
+                                tb = traceback.format_exc()
+                                print >> sys.stderr, unicode(tb)
 
                         elif cacheIt['resourceType'] == 'feed':
                             client.srem(self.crawlHash+':'+name, mem)
@@ -179,14 +176,12 @@ class CrawlWrap():
                                 client.hset(self.domainHash, name, str(millis))
                                 cacheIt['domain'] = name
                                 return cacheIt                                              
-                            except Exception as e:
-                                print >> sys.stderr, unicode(e)
-                                print >> sys.stderr, soup
-                                tb = traceback.format_exc()
-                                print >> sys.stderr, unicode(tb)
+                            except Exception as e:                                
                                 client.sadd(self.crawlHash+':'+name, mem)
                                 client.hset(self.domainHash, name, str(millis))
-                            
+                                print >> sys.stderr, unicode(e)                                
+                                tb = traceback.format_exc()
+                                print >> sys.stderr, unicode(tb)
                                           
                             
         return {'domain': "throttled, or no work to do"}
