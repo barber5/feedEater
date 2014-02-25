@@ -16,6 +16,17 @@ module.exports = function(gearman) {
 							'name': 'url',
 							'value': ''
 						}]
+					},
+					{
+						queryObject: 'body',
+						selector: ['categories'],
+						fieldName: 'categories',
+						isList: true,
+						isOptional: true,
+						constraints: [{
+							'name': 'uuid',
+							'value': ''
+						}]
 					}
 
 				]

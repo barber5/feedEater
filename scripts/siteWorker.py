@@ -3,7 +3,7 @@ from access import access, assets, AccessManager
 from util import assetManager, SQLGearmanWorker, getLimitOffset, joinResult
 from config import redisCfg, dbCfg, s3Cfg, default_page_size, crawlCfg
 from db import new_object, do_exists, new_transaction, update_object, delete_object, new_relation, remove_relation
-from uuid import uuid4
+import uuid
 import pprint, json, redis, time, urlparse
 from random import random
 from postExtractor import extractPosts, extractPost, getNextPage
@@ -11,8 +11,19 @@ from postExtractor import extractPosts, extractPost, getNextPage
 @assets(assetManager=assetManager, dbCursor=dbCfg, redisPool=redisCfg, crawlHandler=crawlCfg)
 @access(accessManager=AccessManager())
 def new_feed(userData, data, assets):        
-    newUUID = new_object(assets['dbCursor'], 'feeds', data)    
-    return {'feed_id': newUUID}
+	newUUID = uuid.uuid4()
+	nq = new_object(assets['dbCursor'], 'feeds', data, newUUID=newUUID, returnQuery=True)    
+	qs = [nq]
+	if 'categories' in data:
+		for cat in data['categories']:
+			relData = {
+				'feed_id': newUUID,
+				'category_id': cat
+			}
+			nextQ = new_relation(assets['dbCursor'], 'feed_categories', relData, returnQuery=True)
+			qs.append(nextQ)
+	new_transaction(assets['dbCursor'], qs)
+	return {'feed_id': newUUID}
 
 @assets(assetManager=assetManager, dbCursor=dbCfg, redisPool=redisCfg, crawlHandler=crawlCfg)
 @access(accessManager=AccessManager())

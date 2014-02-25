@@ -249,6 +249,7 @@ class CrawlWrap():
         lastPage = dbResult['blog']['blog_url']
         tries = 0
         tolerance = 1 # go two pages without seeing something new before giving up
+        pages = [dbResult['blog']['blog_url']]
         while len(newPosts) > 0 or tries < tolerance:
             if len(newPosts) == 0:
                 print 'no new posts!'
@@ -257,11 +258,11 @@ class CrawlWrap():
             else:
                 tries = 0            
             newPosts = []
-            nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage)        
-            print 'nextPage'*100
-            print nextPage    
+            nextPage = getNextPage(dbResult['blog']['pagination_rule'], lastPage, pages)                                            
             if not nextPage:
                 break
+            pages.append(nextPage)
+            print 'pages: {}'.format(pages)
             postUrls = extractPosts(json.loads(dbResult['blog']['extraction_rule']), nextPage)
             for pu in postUrls:
                 if pu not in dbResult['blog']['posts'] and pu not in postsToGrab:
@@ -516,6 +517,7 @@ dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime)  o
 
 def getHtmlFromUrl(link):
 	br = mechanize.Browser()
+	#print (link+ '\n')*20
 	br.addheaders = [('user-agent', user_agent)]	
 	r = br.open(str(link))
 
@@ -636,13 +638,19 @@ def extractPosts(post_rule, url):
             result.extend(nextPosts)
     return result
     '''
-def getNextPage(page_rule, url):
+def getNextPage(page_rule, url, pages):
     html = getHtmlFromUrl(url)
     soup = BeautifulSoup(html)
     url_s = soup.select(page_rule)
+    print pages
     if url_s:
         try:
-            return url_s[0].attrs['href']
+        	for us in url_s:
+        		url = urlparse.urljoin(url, us.attrs['href'])
+        		if url not in pages:
+        			print 'dont have it '*20
+        			print 'returning {}'.format(url)
+        			return url            
         except Exception as e:
             return None
 

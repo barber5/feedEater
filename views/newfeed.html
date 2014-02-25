@@ -53,10 +53,10 @@
     </div>          
     <script id="jobs_t" type="text/x-handlebars-template">
       <div class="row">
-        <div class="large-6 columns">
+        <div class="large-12 columns" id="catties">
           <label>Categories</label>
-          {{#cats}}
-          <input id="chk-{{id}}" type="checkbox"><label for="chk-{{id}}">{{name}}</label>
+          {{#cats}}          
+          <span><input id="{{id}}" type="checkbox"><label for="{{id}}">{{name}}</label></input></span>
           {{/cats}}          
         </div>
       </div>            
@@ -108,21 +108,29 @@
                   var source = $('#jobs_t').html()                
                   var template = Handlebars.compile(source)
                   $('#cats').html(template({cats: data.result.categories}))
-                  $('#savebtn').click(function() {
+                  $('#savebtn').click(function(ev) {                      
+                      ev.preventDefault();                      
                       $('#savebtn').css('visibility', 'hidden')
                       $("#postLoading").css("visibility", "visible");
+                      var matches = [];
+                      $(":checked").each(function() {
+                          matches.push(this.id);
+                      });
                       var request = {
                         'name': $('#name').val(),
                         'blog_url': $('#blog_url').val(),
-                        'feed_url': $('#feed_url').val()                  
-                      }                
+                        'feed_url': $('#feed_url').val(),
+                        'categories': matches              
+                      }         
+                      
+                                            
                       $.post( "/feed", request, function( data ) {
                         console.log(data)
                         if(typeof(data.error) !== 'undefined') {
                           $("#postLoading").css("visibility", "hidden");
                           $("#postError").css("visibility", "visible")                      
                         }
-                        else {
+                        else {                          
                           $("#postLoading").css("visibility", "hidden");
                           $("#postSuccess").css("visibility", "visible")
                         }

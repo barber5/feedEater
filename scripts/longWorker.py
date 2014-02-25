@@ -81,7 +81,7 @@ def crawl_work(userData, data, assets):
 
 @assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
 @access(accessManager=AccessManager())
-def crawl_work_much(userData, data, assets):
+def crawl_work_much(userData, data, assets):	
 	print data
 	ch = assets['crawlHandler']
 	client = redis.Redis(connection_pool=assets['redisPool'])
@@ -104,7 +104,7 @@ def crawl_work_much(userData, data, assets):
 
 @assets(assetManager=assetManager, dbCursor=dbCfg)
 @access(accessManager=AccessManager())
-def test_rule(userData, data, assets):
+def test_rule(userData, data, assets):	
 	cur = assets['dbCursor']
 	query = "SELECT blog_url, extraction_rule, pagination_rule FROM feeds where id=%s"
 	cur.execute(query, [data['feed_id']])
@@ -122,11 +122,15 @@ def test_rule(userData, data, assets):
 	posts = extractPosts(post_rule, blog_url)
 	result = {}
 	result['homepage'] = posts
-	np = urlparse.urljoin(blog_url, getNextPage(page_rule, blog_url))
+	pages = [blog_url]
+	np = urlparse.urljoin(blog_url, getNextPage(page_rule, blog_url, pages))
+	print 'next pge is {}'.format(np)
 	posts = (extractPosts(post_rule, np))	
 	result['page2'] = posts	
-	np = urlparse.urljoin(np, getNextPage(page_rule, np))
+	np = urlparse.urljoin(np, getNextPage(page_rule, np, pages))
+	pages.append(np)
 	posts = extractPosts(post_rule, np)
+	pages.append(np)
 	result['page3'] = posts		
 	if len(posts) > 0:
 		result['typical_post'] = extractPost(posts[0], post_rule, post_rule['comment'])
