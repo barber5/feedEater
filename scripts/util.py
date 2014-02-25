@@ -6,7 +6,7 @@ import smtplib, json, datetime, time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from config import default_page_size
-import urlparse
+import urlparse, urllib
 from db import new_object, update_object, delete_object, new_transaction
 
 user_agent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22'
@@ -517,6 +517,7 @@ dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime)  o
 def getHtmlFromUrl(link):
 	br = mechanize.Browser()
 	br.addheaders = [('user-agent', user_agent)]
+    link = urllib.quote(link)
 	r = br.open(link)
 
 	html = r.read()
