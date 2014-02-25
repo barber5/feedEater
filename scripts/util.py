@@ -518,7 +518,7 @@ def getHtmlFromUrl(link):
 	br = mechanize.Browser()
 	br.addheaders = [('user-agent', user_agent)]
 	print (link+'\n')*20
-	r = br.open(link)
+	r = br.open(str(link))
 
 	html = r.read()
 
