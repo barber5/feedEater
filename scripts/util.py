@@ -294,14 +294,25 @@ class CrawlWrap():
             lastCrawl = int(value)
             millis = int(round(time.time()))
             delt = millis - lastCrawl
-            members = client.smembers(self.crawlHash+":"+name)
-            for mem in members:
-                cacheIt = json.loads(mem)
-                if cacheIt['resourceType'] == 'post':
-                     domainRes['posts'].append(cacheIt)                   
-                elif cacheIt['resourceType'] == 'feed':
-                    domainRes['feeds'].append(cacheIt)
-            result.append(domainRes)
+            members = client.scard(self.crawlHash+":"+name)
+            if members < 50:
+                members = client.smembers(self.crawlHash+":"+name)
+                for mem in members:
+                    cacheIt = json.loads(mem)
+                    if cacheIt['resourceType'] == 'post':
+                         domainRes['posts'].append(cacheIt)                   
+                    elif cacheIt['resourceType'] == 'feed':
+                        domainRes['feeds'].append(cacheIt)
+                result.append(domainRes)
+            else:
+                for i in range(50):
+                    mem = client.srandmember(self.crawlHash+":"+name)
+                    cacheIt = json.loads(mem)
+                    if cacheIt['resourceType'] == 'post':
+                         domainRes['posts'].append(cacheIt)                   
+                    elif cacheIt['resourceType'] == 'feed':
+                        domainRes['feeds'].append(cacheIt)
+                    result.append(domainRes)
         return result
                 
 
