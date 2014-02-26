@@ -306,6 +306,7 @@ class CrawlWrap():
                         domainRes['feeds'].append(cacheIt)
                 result.append(domainRes)
             else:
+                print 'too many members\n'*50
                 for i in range(50):
                     mem = client.srandmember(self.crawlHash+":"+name)
                     cacheIt = json.loads(mem)
