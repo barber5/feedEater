@@ -295,7 +295,7 @@ class CrawlWrap():
             millis = int(round(time.time()))
             delt = millis - lastCrawl
             members = client.scard(self.crawlHash+":"+name)
-            if members < 50:
+            if int(members) < 50:
                 members = client.smembers(self.crawlHash+":"+name)
                 for mem in members:
                     cacheIt = json.loads(mem)
