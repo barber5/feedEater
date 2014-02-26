@@ -132,7 +132,7 @@ def get_jobs(userData, data, assets):
 @access(accessManager=AccessManager())
 def get_posts(userData, data, assets):
 	cur = assets['dbCursor']
-	query = "SELECT id, title, byline, post_date, post_url FROM posts where feed_id=%s"
+	query = "SELECT id, title, byline, post_date, post_url FROM posts where feed_id=%s LIMIT 50"
 	cur.execute(query, [data['feed_id']])
 	rows = cur.fetchall()
 	nameMapping = {
