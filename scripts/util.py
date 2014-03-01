@@ -296,7 +296,6 @@ class CrawlWrap():
         result = []    
         print domains
         for name, value in domains.iteritems():
-            domainRes = {'posts': [], 'feeds': [], 'domain': name}
             lastCrawl = int(value)
             millis = int(round(time.time()))
             delt = millis - lastCrawl
@@ -311,23 +310,17 @@ class CrawlWrap():
                 members = client.smembers(self.crawlHash+":"+name)
                 for mem in members:                    
                     cacheIt = json.loads(mem)
-                    if cacheIt['resourceType'] == 'post':
-                         domainRes['posts'].append(cacheIt)                   
-                    elif cacheIt['resourceType'] == 'feed':
-                        domainRes['feeds'].append(cacheIt)
-                result.append(domainRes)
+                    cacheIt['domain'] = name
+                    result.append(cacheIt)
+                    
             else:
                 print 'too many members\n'*50
                 for i in range(5):    
                     print i                
                     mem = client.srandmember(self.crawlHash+":"+name)
                     cacheIt = json.loads(mem)
-                    if cacheIt['resourceType'] == 'post':
-                         domainRes['posts'].append(cacheIt)                   
-                    elif cacheIt['resourceType'] == 'feed':
-                        domainRes['feeds'].append(cacheIt)
-                    result.append(domainRes)
-        print len(result)
+                    cacheIt['domain'] = name
+                    result.append(cacheIt)                            
         return result
                 
 

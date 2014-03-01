@@ -107,30 +107,18 @@
     </script>
     <script>      
         $( document ).ready(function() {           
-          $.getJSON('/jobs', function(data) {   
-                      
+          $.getJSON('/jobs', function(data) {                      
             var source = $('#jobs_t').html()                
             var template = Handlebars.compile(source)
             var jobs = [];
-            for(var i = 0; i < data.result.jobs.length; i++) {
-              for(var j = 0; j < data.result.jobs[i].feeds.length; j++) {
+            for(var i = 0; i < data.result.jobs.length; i++) {              
                 var nextOne = {
                   'domain': data.result.jobs[i].domain,
-                  'type': 'feed post update',
-                  'id': data.result.jobs[i].feeds[j].resourceId,
-                  'url': data.result.jobs[i].feeds[j].url
+                  'type': data.result.jobs[i].resouceType,
+                  'id': data.result.jobs[i].resourceId,
+                  'url': data.result.jobs[i].url
                 }
-                jobs.push(nextOne)
-              }
-              for(var j = 0; j < data.result.jobs[i].posts.length; j++) {
-                var nextOne = {
-                  'domain': data.result.jobs[i].domain,
-                  'type': 'post crawl',
-                  'id': data.result.jobs[i].posts[j].resourceId,
-                  'url': data.result.jobs[i].posts[j].url
-                }
-                jobs.push(nextOne)
-              }
+                jobs.push(nextOne)              
             }
             
             if(jobs.length == 0) {
