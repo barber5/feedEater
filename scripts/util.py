@@ -304,7 +304,7 @@ class CrawlWrap():
             members = client.scard(self.crawlHash+":"+name)
             print members
 
-            if len(members) < 50:
+            if members < 50:
                 print 'not too many'*50
                 members = client.smembers(self.crawlHash+":"+name)
                 for mem in members:
