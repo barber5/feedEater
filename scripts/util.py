@@ -294,7 +294,7 @@ class CrawlWrap():
     def getWorkStats(self, client, cur):
         domains = client.hgetall(self.domainHash)    
         result = []    
-        print domains
+        #print domains
         for name, value in domains.iteritems():
             domainRes = {'posts': [], 'feeds': [], 'domain': name}
             lastCrawl = int(value)
@@ -302,7 +302,7 @@ class CrawlWrap():
             delt = millis - lastCrawl
             print self.crawlHash+":"+name
             members = client.scard(self.crawlHash+":"+name)
-            print members            
+            print type(members)
             if members < 50:
                 print 'not too many'*50
                 members = client.smembers(self.crawlHash+":"+name)
