@@ -305,6 +305,8 @@ class CrawlWrap():
             print members
             print type(members)
             if members < 50:
+                if members == 0:
+                    continue
                 print 'not too many'*50
                 members = client.smembers(self.crawlHash+":"+name)
                 for mem in members:                    
