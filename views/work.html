@@ -121,12 +121,12 @@
                 jobs.push(nextOne)              
             }
             
-            if(jobs.length == 0) {
+            if(data.total == 0) {
               $('#jobs').html("<h3>no jobs in queue</h3><br><br>")
               $('#doWork').css('visibility', 'hidden')
             }
             else {
-              $('#jobs').html(template({jobs: jobs, count: jobs.length}))
+              $('#jobs').html(template({jobs: jobs, count: data.total}))
               for(var i = 0; i < jobs.length; i++) {
                 (function(idd) {            
                   $('#crawl-'+jobs[idd].id).click(function() {                    

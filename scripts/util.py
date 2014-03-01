@@ -293,16 +293,14 @@ class CrawlWrap():
 
     def getWorkStats(self, client, cur):
         domains = client.hgetall(self.domainHash)    
-        result = []    
+        result = {'jobs': [], 'total': 0}    
         print domains
         for name, value in domains.iteritems():
             lastCrawl = int(value)
             millis = int(round(time.time()))
-            delt = millis - lastCrawl
-            print self.crawlHash+":"+name
-            members = client.scard(self.crawlHash+":"+name)
-            print members
-            print type(members)
+            delt = millis - lastCrawl            
+            members = client.scard(self.crawlHash+":"+name)            
+            result['total'] += members            
             if members < 50:
                 if members == 0:
                     continue
@@ -311,7 +309,7 @@ class CrawlWrap():
                 for mem in members:                    
                     cacheIt = json.loads(mem)
                     cacheIt['domain'] = name
-                    result.append(cacheIt)
+                    result['jobs'].append(cacheIt)
                     
             else:
                 print 'too many members\n'*50
@@ -320,7 +318,7 @@ class CrawlWrap():
                     mem = client.srandmember(self.crawlHash+":"+name)
                     cacheIt = json.loads(mem)
                     cacheIt['domain'] = name
-                    result.append(cacheIt)                            
+                    result['jobs'].append(cacheIt)                            
         return result
                 
 

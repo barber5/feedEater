@@ -126,7 +126,7 @@ def get_jobs(userData, data, assets):
 	ch = assets['crawlHandler']
 	client = redis.Redis(connection_pool=assets['redisPool'])
 	cur = assets['dbCursor']
-	return {'jobs': ch.getWorkStats(client, cur)}
+	return ch.getWorkStats(client, cur)
 
 @assets(assetManager=assetManager, dbCursor=dbCfg)
 @access(accessManager=AccessManager())
