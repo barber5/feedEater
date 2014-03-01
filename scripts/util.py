@@ -313,7 +313,7 @@ class CrawlWrap():
                     
             else:
                 print 'too many members\n'*50
-                for i in range(5):    
+                for i in range(25):    
                     print i                
                     mem = client.srandmember(self.crawlHash+":"+name)
                     cacheIt = json.loads(mem)
