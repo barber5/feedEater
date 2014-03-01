@@ -307,8 +307,7 @@ class CrawlWrap():
             if members < 50:
                 print 'not too many'*50
                 members = client.smembers(self.crawlHash+":"+name)
-                for mem in members:
-                    print mem
+                for mem in members:                    
                     cacheIt = json.loads(mem)
                     if cacheIt['resourceType'] == 'post':
                          domainRes['posts'].append(cacheIt)                   
@@ -317,8 +316,7 @@ class CrawlWrap():
                 result.append(domainRes)
             else:
                 print 'too many members\n'*50
-                for i in range(50):
-                    print i
+                for i in range(50):                    
                     mem = client.srandmember(self.crawlHash+":"+name)
                     cacheIt = json.loads(mem)
                     if cacheIt['resourceType'] == 'post':
