@@ -118,7 +118,7 @@ class CrawlWrap():
             since = millis - lastCrawl
             needed = self.crawlDelay + self.randomDelay*random.random()
             print '{} last crawled: {}, needs: {}    ----  {}'.format(name, since, needed, since > needed)
-            if since > needed:  
+            if since > needed or resId or domain:  
                 cacheIt = {} 
                 if resId:
                     members = client.smembers(self.crawlHash+":"+name)
