@@ -301,7 +301,7 @@ class CrawlWrap():
             millis = int(round(time.time()))
             delt = millis - lastCrawl
             members = client.scard(self.crawlHash+":"+name)
-            #print members
+            print members
 
             if len(members) < 50:
                 print 'not too many'*50
