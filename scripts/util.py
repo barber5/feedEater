@@ -189,7 +189,7 @@ class CrawlWrap():
     def crawlPost(self, cur, cacheIt):
         query = "SELECT fe.extraction_rule, po.feed_id, fe.comments_rule from posts po inner join feeds fe on fe.id=po.feed_id where po.id=%s"
         cur.execute(query, [cacheIt['resourceId']]) 
-        print cur.mogrify(query, [cacheIt['resourceId']])   
+        #print cur.mogrify(query, [cacheIt['resourceId']])   
         rows = cur.fetchall()        
         nameMapping = {
             'blog': {
@@ -202,7 +202,7 @@ class CrawlWrap():
         post = extractPost(cacheIt['url'], json.loads(dbResult['blog']['extraction_rule']), dbResult['blog']['comments_rule'])        
         post['post_id'] = cacheIt['resourceId']
         qs = []
-        print post
+        #print post
         
         qs.append(delete_object(cur, 'comments', 'post_id', post['post_id'], returnQuery=True))
         for comm in post['comments']:
@@ -210,7 +210,7 @@ class CrawlWrap():
             qs.append(new_object(cur, 'comments', comm, returnQuery=True))
 
         qs.append(update_object(cur, 'posts', 'post_id', post, returnQuery=True))
-        print qs
+        #print qs
         new_transaction(cur, qs)
 
     def crawlFeed(self, client, cur, cacheIt):        
@@ -235,16 +235,16 @@ class CrawlWrap():
         if not dbResult['blog']['extraction_rule'] or not dbResult['blog']['pagination_rule']:
             return {"error": "extraction rules missing"}
         postUrls = extractPosts(json.loads(dbResult['blog']['extraction_rule']), dbResult['blog']['blog_url'])
-        print postUrls
+        #print postUrls
         newPosts = []
         postsToGrab = set([])
         for pu in postUrls:
-            print pu
+            #print pu
             if pu not in dbResult['blog']['posts']:         
                 newPosts.append(pu)
             else:
                 print dbResult['blog']['posts'][pu]
-        print newPosts
+        #print newPosts
         postsToGrab = postsToGrab | set(newPosts)
         lastPage = dbResult['blog']['blog_url']
         tries = 0
@@ -270,7 +270,7 @@ class CrawlWrap():
                     newPosts.append(pu)
             postsToGrab = postsToGrab | set(newPosts)   
             
-            print postsToGrab
+            #print postsToGrab
             for pu in postsToGrab:  
                 postData = {
                     'feed_id': cacheIt['resourceId'],
@@ -280,7 +280,7 @@ class CrawlWrap():
                 new_object(cur, 'posts', postData)                      
                 dbResult['blog']['posts'][pu] = True
             postsToGrab = set([])        
-            print postsToGrab
+            #print postsToGrab
 
             lastPage = nextPage
             print 'sleeping'
