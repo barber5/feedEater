@@ -27,13 +27,7 @@
                 <div class="row">
                   <div class="large-6 columns">
                   <h3>{{count}} jobs in the queue</h3>
-                  </div>
-                  <div class="large-3 columns">
-                  <button class="small" id="doWork">Process job</button>  
-                  </div>
-                  <div class="large-3 columns">
-                  <button class="small" id="loopWork">Process continually</button>  
-                  </div>
+                  </div>                  
                 </div>
                 <div class="row">
                 <div class="large-12 columns">
@@ -160,26 +154,7 @@
                 })(i)
               }
 
-              $('#doWork').click(function() {
-                $('#doWork').css('visibility', 'hidden')
-                $('#loopWork').css('visibility', 'hidden')
-                $.post('/work',   function(data) {
-                  console.log(data)
-                  $('#doWork').css('visibility', 'visible')
-                  $('#loopWork').css('visibility', 'visible')
-                  $('#lastResult').html(JSON.stringify(data))
-                })
-              }) 
-              $('#loopWork').click(function() {
-                $('#doWork').css('visibility', 'hidden')
-                $('#loopWork').css('visibility', 'hidden')
-                $.post('/workmuch',   function(data) {
-                  console.log(data)
-                  $('#doWork').css('visibility', 'visible')
-                  $('#loopWork').css('visibility', 'visible')
-                  $('#lastResult').html(JSON.stringify(data))
-                })
-              })
+              
             }
           })                                            
             
