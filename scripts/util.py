@@ -122,7 +122,7 @@ class CrawlWrap():
                 cacheIt = {} 
                 if resId:
                     members = client.smembers(self.crawlHash+":"+name)
-                    print members
+                    #print members
                     for mem in members:                        
                         cacheIt = json.loads(mem)
                         if cacheIt['resourceId'] == resId and cacheIt['resourceType'] == 'post':
@@ -302,8 +302,7 @@ class CrawlWrap():
             delt = millis - lastCrawl
             print self.crawlHash+":"+name
             members = client.scard(self.crawlHash+":"+name)
-            print members
-
+            print members            
             if members < 50:
                 print 'not too many'*50
                 members = client.smembers(self.crawlHash+":"+name)
