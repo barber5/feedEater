@@ -6,12 +6,12 @@ from random import random
 
 cur = assetManager.getAsset('dbCursor', dbCfg)
 ch = assetManager.getAsset('crawlHandler', crawlCfg)
-client = assetManager.getAsset('redisPool', redisCfg)
+pool = assetManager.getAsset('redisPool', redisCfg)
 
 def crawl_work_much():			
 	resId = None
 	domain = None	
-	
+	client = redis.Redis(connection_pool=pool)
 	while True:
 		print ch.doWork(client, cur, resId=resId, domain=domain)
 		time.sleep(1)
