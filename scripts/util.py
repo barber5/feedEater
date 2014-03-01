@@ -294,7 +294,7 @@ class CrawlWrap():
     def getWorkStats(self, client, cur):
         domains = client.hgetall(self.domainHash)    
         result = []    
-        #print domains
+        print domains
         for name, value in domains.iteritems():
             domainRes = {'posts': [], 'feeds': [], 'domain': name}
             lastCrawl = int(value)
@@ -316,7 +316,8 @@ class CrawlWrap():
                 result.append(domainRes)
             else:
                 print 'too many members\n'*50
-                for i in range(50):                    
+                for i in range(5):    
+                    print i                
                     mem = client.srandmember(self.crawlHash+":"+name)
                     cacheIt = json.loads(mem)
                     if cacheIt['resourceType'] == 'post':
