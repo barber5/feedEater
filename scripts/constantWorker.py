@@ -8,7 +8,7 @@ cur = assetManager.getAsset('dbCursor', dbCfg)
 ch = assetManager.getAsset('crawlHandler', crawlCfg)
 client = assetManager.getAsset('redisPool', redisCfg)
 
-def crawl_work_much(userData, data, assets):			
+def crawl_work_much():			
 	resId = None
 	domain = None	
 	
