@@ -250,6 +250,7 @@ class CrawlWrap():
         tries = 0
         tolerance = 1 # go two pages without seeing something new before giving up
         pages = [dbResult['blog']['blog_url']]
+        loops = 0
         while len(newPosts) > 0 or tries < tolerance:
             if len(newPosts) == 0:
                 print 'no new posts!'
@@ -282,9 +283,14 @@ class CrawlWrap():
             print postsToGrab
 
             lastPage = nextPage
-            print 'sleeping....'
-            time.sleep(self.crawlDelay+self.randomDelay*random.random())
-            print 'awake!'  
+            print 'sleeping'
+            if loops < 10:
+                time.sleep(1)
+            else:
+                time.sleep(crawlDelay+random.random()*randomDelay)
+            print 'awake!'
+
+
     def getWorkStats(self, client, cur):
         domains = client.hgetall(self.domainHash)    
         result = []    
