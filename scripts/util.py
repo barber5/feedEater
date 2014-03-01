@@ -325,7 +325,7 @@ class CrawlWrap():
                     elif cacheIt['resourceType'] == 'feed':
                         domainRes['feeds'].append(cacheIt)
                     result.append(domainRes)
-        return []
+        return result
                 
 
 
