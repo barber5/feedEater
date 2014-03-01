@@ -300,6 +300,7 @@ class CrawlWrap():
             lastCrawl = int(value)
             millis = int(round(time.time()))
             delt = millis - lastCrawl
+            print self.crawlHash+":"+name
             members = client.scard(self.crawlHash+":"+name)
             print members
 
