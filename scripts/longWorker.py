@@ -60,6 +60,7 @@ def crawl_all(userData, data, assets):
 @assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
 @access(accessManager=AccessManager())
 def crawl_work(userData, data, assets):
+	return {}
 	print data
 	ch = assets['crawlHandler']
 	client = redis.Redis(connection_pool=assets['redisPool'])
@@ -82,6 +83,7 @@ def crawl_work(userData, data, assets):
 @assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
 @access(accessManager=AccessManager())
 def crawl_work_much(userData, data, assets):	
+	return {}
 	print data
 	ch = assets['crawlHandler']
 	client = redis.Redis(connection_pool=assets['redisPool'])
