@@ -302,7 +302,7 @@ class CrawlWrap():
             delt = millis - lastCrawl
             print self.crawlHash+":"+name
             members = client.scard(self.crawlHash+":"+name)
-            print type(members)
+            print members
             if members < 50:
                 print 'not too many'*50
                 members = client.smembers(self.crawlHash+":"+name)
@@ -323,7 +323,7 @@ class CrawlWrap():
                     elif cacheIt['resourceType'] == 'feed':
                         domainRes['feeds'].append(cacheIt)
                     result.append(domainRes)
-        return result
+        return []
                 
 
 
