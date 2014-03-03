@@ -638,6 +638,7 @@ def extractPosts(post_rule, url):
     soup = BeautifulSoup(html)
     postListRule = post_rule['postlist']
     postUrls = soup.select(postListRule)
+    print 'posts: {}'.format(postUrls)
     return [urlparse.urljoin(url, pu.attrs['href']) for pu in postUrls]
     '''
     if postUrls:
