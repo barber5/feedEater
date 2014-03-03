@@ -287,7 +287,7 @@ class CrawlWrap():
             if loops < 10:
                 time.sleep(1)
             else:
-                time.sleep(self.crawlDelay+random.random()*randomDelay)
+                time.sleep(self.crawlDelay+random.random()*self.randomDelay)
             print 'awake!'
             loops += 1
 
