@@ -289,6 +289,7 @@ class CrawlWrap():
             else:
                 time.sleep(crawlDelay+random.random()*randomDelay)
             print 'awake!'
+            loops += 1
 
 
     def getWorkStats(self, client, cur):
