@@ -195,6 +195,7 @@
               $('#byline').val(er.byline|| "")
               $('#postlist').val(er.postlist|| "")
               $('#date').val(er.post_date|| "")
+              $('#page_limit').val(data.result.feed.page_limit || 10)
             })
             $.getJSON('/feed/<%= feed_id %>/posts', function(data) {
               var source = $('#posts_t').html()
