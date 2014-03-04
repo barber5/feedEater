@@ -535,6 +535,7 @@ dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime)  o
 
 def getHtmlFromUrl(link):
 	br = mechanize.Browser()
+    br.set_handle_robots(False)
 	#print (link+ '\n')*20
 	br.addheaders = [('user-agent', user_agent)]	
 	r = br.open(str(link))
