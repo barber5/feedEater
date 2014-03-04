@@ -214,7 +214,7 @@ class CrawlWrap():
         new_transaction(cur, qs)
 
     def crawlFeed(self, client, cur, cacheIt):        
-        query = "SELECT extraction_rule, pagination_rule, blog_url, post_url FROM feeds left outer join posts on feeds.id=posts.feed_id where feeds.id=%s"  
+        query = "SELECT extraction_rule, pagination_rule, blog_url, post_url, page_limit FROM feeds left outer join posts on feeds.id=posts.feed_id where feeds.id=%s"  
         cur.execute(query, [cacheIt['resourceId']])   
         rows = cur.fetchall()
         nameMapping = {
@@ -222,6 +222,7 @@ class CrawlWrap():
                 0: 'extraction_rule',
                 1: 'pagination_rule',
                 2: 'blog_url',
+                4: 'page_limit',
                 'posts': [{
                     3: 'post_url'
                 }]
@@ -284,6 +285,8 @@ class CrawlWrap():
 
             lastPage = nextPage
             print 'sleeping'
+            if loops > int(dbResult['blog']['page_limit']):
+                break
             if loops < 10:
                 time.sleep(1)
             else:
