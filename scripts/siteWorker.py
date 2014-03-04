@@ -50,7 +50,7 @@ def feed_rules(userData, data, assets):
 
 	rulesData['feed_id'] = feedId
 	rulesData['extraction_rule'] = json.dumps(data)		
-
+	rulesData['page_limit'] = data['page_limit']
 	update_object(assets['dbCursor'], 'feeds', 'feed_id', rulesData)
 	return {}
 @assets(assetManager=assetManager, dbCursor=dbCfg)

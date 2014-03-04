@@ -301,6 +301,15 @@ module.exports = function(gearman) {
 					},
 					{
 						queryObject: 'body',
+						selector: ['page_limit'],
+						fieldName: 'page_limit',
+						constraints: [{
+							'name': 'int',
+							'value': ''
+						}]
+					},
+					{
+						queryObject: 'body',
 						selector: ['postlist'],
 						fieldName: 'postlist',
 						constraints: [{

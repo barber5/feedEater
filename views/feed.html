@@ -104,6 +104,11 @@
                   <label>blogroll rule (optional)
                     <input id="blogroll" type="text" placeholder="large-4.columns" />
                   </label>
+                </div> 
+                <div class="large-4 columns">
+                  <label>initial crawl pages
+                    <input id="page_limit" type="text" placeholder="10" />
+                  </label>
                 </div>                
               </div>                                       
             </form> 
@@ -207,7 +212,8 @@
                   'pagination': $('#pagination').val(),
                   'postlist': $('#postlist').val(),
                   'comment': $('#comment').val(),
-                  'blogroll': $('blogroll').val()
+                  'blogroll': $('#blogroll').val(),
+                  'page_limit': $('#page_limit').val()
                 }
                 $.post( "/feed/<%=feed_id%>/rules", request, function( data ) {
                   console.log(data)
