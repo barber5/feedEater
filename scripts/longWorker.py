@@ -135,6 +135,13 @@ def test_rule(userData, data, assets):
 	result['page3'] = posts		
 	if len(posts) > 0:
 		result['typical_post'] = extractPost(posts[0], post_rule, post_rule['comment'])
+		print 'typical post'
+		print 'title: {}'.format(result['typical_post']['title'])
+		print 'byline: {}'.format(result['typical_post']['byline'])
+		print 'post_date: {}'.format(result['typical_post']['post_date'])
+		
+		print 'comments: {}'.format(result['typical_post']['comments'])
+		print 'content: {}'.format(result['typical_post']['content'])
 	return result		
 
 
