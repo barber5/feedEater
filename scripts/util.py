@@ -534,15 +534,15 @@ dthandler = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime)  o
 
 
 def getHtmlFromUrl(link):
-	br = mechanize.Browser()
+    br = mechanize.Browser()
     br.set_handle_robots(False)
 	#print (link+ '\n')*20
-	br.addheaders = [('user-agent', user_agent)]	
-	r = br.open(str(link))
+    br.addheaders = [('user-agent', user_agent)]	
+    r = br.open(str(link))
 
-	html = r.read()
+    html = r.read()
 
-	return html
+    return html
 
 def getNavStrs(soup, die=True):
 	result = []
