@@ -172,7 +172,7 @@ def feed_links(userData, data, assets):
 @access(accessManager=AccessManager())
 def feed_quotes(userData, data, assets):
 	cur = assets['dbCursor']
-	query = "SELECT po.id, po.title, po.content from posts po where po.title is not null and po.feed_id=%s limit 20"	
+	query = "SELECT po.id, po.title, po.content from posts po where po.title is not null and po.feed_id=%s limit 50"	
 	nameMapping = {
 		'posts': [{
 			0: 'post_id',
