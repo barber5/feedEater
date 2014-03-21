@@ -162,6 +162,7 @@ def feed_links(userData, data, assets):
 		for link in links:					
 			if 'href' not in link.attrs:
 				continue
+			print urlparse.urljoin(p['post_url'], link.attrs['href'])
 			result['links'].append(urlparse.urljoin(p['post_url'], link.attrs['href']))
 	return result
 
