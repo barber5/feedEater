@@ -192,5 +192,6 @@ SQLworker.register_task("crawl_work_much", crawl_work_much)
 SQLworker.register_task("crawl_post", crawl_post)
 SQLworker.register_task("test_rule", test_rule)
 SQLworker.register_task("feed_links", feed_links)
+SQLworker.register_task("feed_quotes", feed_quotes)
 
 SQLworker.work()

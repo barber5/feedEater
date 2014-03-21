@@ -129,7 +129,8 @@ else {
 		})
 	});	
 	app.get('/feed/:feed_id/links', feed.get_links)
-
+	app.get('/feed/:feed_id/quotes', feed.get_quotes)
+	
 	http.createServer(app).listen(app.get('port'), function(){
 		mylogger.info('Express server listening on port ' + app.get('port'));
 	});

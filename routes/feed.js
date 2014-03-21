@@ -207,6 +207,15 @@ module.exports = function(gearman) {
 			}
 			jobber(requirements, res, gearman, 'feed_links')
 		},
+		get_quotes: function(req, res) {
+			var requirements = {
+				queryObjects: validate.pq_QO(req),
+				requirements: [
+					validate.uuid_REQ('feed_id', 'params')
+				]
+			}
+			jobber(requirements, res, gearman, 'feed_quotes')
+		},
 		crawl_work: function(req, res) {
 			var requirements = {
 				queryObjects: validate.b_QO(req),
