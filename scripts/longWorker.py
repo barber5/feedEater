@@ -151,7 +151,7 @@ def feed_links(userData, data, assets):
 		}]
 	}
 	posts = cur.select(query, [data['feed_id']], nameMapping)
-	for p in posts:
+	for p in posts['posts']:
 		print p['title']
 	return {}
 
