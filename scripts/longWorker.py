@@ -7,6 +7,7 @@ from uuid import uuid4
 import pprint, json, redis, time, urlparse
 from random import random
 from postExtractor import extractPosts, extractPost, getNextPage
+from bs4 import NavigableString, Comment, BeautifulSoup as bs
 
 
 @assets(assetManager=assetManager, dbCursor=dbCfg,crawlHandler=crawlCfg, redisPool=redisCfg)
@@ -151,9 +152,15 @@ def feed_links(userData, data, assets):
 		}]
 	}
 	posts = cur.select(query, [data['feed_id']], nameMapping)
+	result = {'links': []}
 	for p in posts['posts']:
-		print p['title']
-	return {}
+		html = p['content']
+		soup = bs(html)
+		links = a.find_all('a')
+		for link in links:
+			lnk = link.attrs['href']
+			result['links'].append(lnk)
+	return result
 
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
