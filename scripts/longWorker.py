@@ -143,12 +143,13 @@ def test_rule(userData, data, assets):
 @access(accessManager=AccessManager())
 def feed_links(userData, data, assets):
 	cur = assets['dbCursor']
-	query = "SELECT po.id, po.title, po.content from posts po where po.title is not null and po.feed_id=%s"	
+	query = "SELECT po.id, po.title, po.content, po.post_url from posts po where po.title is not null and po.feed_id=%s"	
 	nameMapping = {
 		'posts': [{
 			0: 'post_id',
 			1: 'title',
-			2: 'content'
+			2: 'content',
+			3: 'post_url'
 		}]
 	}
 	posts = cur.select(query, [data['feed_id']], nameMapping)
@@ -161,7 +162,7 @@ def feed_links(userData, data, assets):
 		for link in links:					
 			if 'href' not in link.attrs:
 				continue
-			result['links'].append(link.attrs['href'])
+			result['links'].append(urlparse.urljoin(p['post_url'], link.attrs['href']))
 	return result
 
 @assets(assetManager=assetManager, dbCursor=dbCfg)
