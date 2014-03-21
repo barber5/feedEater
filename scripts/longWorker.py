@@ -157,9 +157,8 @@ def feed_links(userData, data, assets):
 		html = p['content']
 		soup = bs(html)
 		links = soup.find_all('a')
-		for link in links:
-			lnk = link.attrs['href']
-			result['links'].append(lnk)
+		for link in links:			
+			result['links'].append(link)
 	return result
 
 @assets(assetManager=assetManager, dbCursor=dbCfg)
