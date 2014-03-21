@@ -168,21 +168,7 @@ def get_post(userData, data, assets):
 	posts = joinResult(rows, nameMapping)	
 	return posts
 
-@assets(assetManager=assetManager, dbCursor=dbCfg)
-@access(accessManager=AccessManager())
-def feed_links(userData, data, assets):
-	cur = assets['dbCursor']
-	query = "SELECT po.id, po.title, po.content from posts po where po.title is not null and po.feed_id=%s"	
-	nameMapping = {
-		'posts': [{
-			0: 'post_id',
-			1: 'title',
-			2: 'content'
-		}]
-	}
-	posts = cur.select(query, [data['feed_id']], nameMapping)
-	for p in posts:
-		print p['title']
+
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
 SQLworker.register_task("new_feed", new_feed)
@@ -194,7 +180,7 @@ SQLworker.register_task("get_jobs", get_jobs)
 SQLworker.register_task("get_posts", get_posts)
 SQLworker.register_task("get_post", get_post)
 SQLworker.register_task("new_category", new_category)
-SQLworker.register_task("feed_links", feed_links)
+
 
 
 SQLworker.work()

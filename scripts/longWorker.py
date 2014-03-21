@@ -138,6 +138,23 @@ def test_rule(userData, data, assets):
 		
 	return result		
 
+@assets(assetManager=assetManager, dbCursor=dbCfg)
+@access(accessManager=AccessManager())
+def feed_links(userData, data, assets):
+	cur = assets['dbCursor']
+	query = "SELECT po.id, po.title, po.content from posts po where po.title is not null and po.feed_id=%s"	
+	nameMapping = {
+		'posts': [{
+			0: 'post_id',
+			1: 'title',
+			2: 'content'
+		}]
+	}
+	posts = cur.select(query, [data['feed_id']], nameMapping)
+	for p in posts:
+		print p['title']
+	return {}
+
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
 SQLworker.register_task("init_feed", init_feed)
@@ -146,5 +163,6 @@ SQLworker.register_task("crawl_work", crawl_work)
 SQLworker.register_task("crawl_work_much", crawl_work_much)
 SQLworker.register_task("crawl_post", crawl_post)
 SQLworker.register_task("test_rule", test_rule)
+SQLworker.register_task("feed_links", feed_links)
 
 SQLworker.work()
