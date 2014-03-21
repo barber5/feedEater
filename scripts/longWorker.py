@@ -1,6 +1,6 @@
 from util import SQLGearmanWorker
 from access import access, assets, AccessManager
-from util import assetManager, SQLGearmanWorker, getLimitOffset, joinResult
+from util import assetManager, SQLGearmanWorker, getLimitOffset, joinResult, stringifySoup
 from config import redisCfg, dbCfg, s3Cfg, default_page_size, crawlCfg
 from db import new_object, do_exists, new_transaction, update_object, delete_object, new_relation, remove_relation
 from uuid import uuid4
@@ -172,7 +172,7 @@ def feed_links(userData, data, assets):
 @access(accessManager=AccessManager())
 def feed_quotes(userData, data, assets):
 	cur = assets['dbCursor']
-	query = "SELECT po.id, po.title, po.content from posts po where po.title is not null and po.feed_id=%s"	
+	query = "SELECT po.id, po.title, po.content from posts po where po.title is not null and po.feed_id=%s limit 20"	
 	nameMapping = {
 		'posts': [{
 			0: 'post_id',
@@ -181,13 +181,14 @@ def feed_quotes(userData, data, assets):
 		}]
 	}
 	posts = cur.select(query, [data['feed_id']], nameMapping)
-	result = {'links': []}
+	result = {'quotes': []}
 	for p in posts['posts']:
 		html = p['content']
 		soup = bs(html)
-		links = soup.find_all('blockquote')
-		for link in links:			
-			result['links'].append(link)
+		bqs = soup.find_all('blockquote')
+		for bq in bqs:			
+			q = stringifySoup(bq)
+			result['quotes'].append(q)
 	return result
 
 
