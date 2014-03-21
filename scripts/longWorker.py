@@ -152,6 +152,7 @@ def feed_links(userData, data, assets):
 		}]
 	}
 	posts = cur.select(query, [data['feed_id']], nameMapping)
+	print len(posts['posts'])
 	result = {'links': []}
 	for p in posts['posts']:
 		html = p['content']
