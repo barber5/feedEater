@@ -64,6 +64,11 @@ class CursorWrap:
     def fetchSpecial(self, cfg):
         None
 
+    def select(self, query, repl, nameMapping):
+        self.execute(query, repl)
+        rows = self.fetchall()
+        return joinResult(rows, nameMapping)
+
 
 class CrawlWrap():
     def __init__(self, crawlHash, domainHash, crawlDelay, randomDelay):
