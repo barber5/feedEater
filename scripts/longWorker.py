@@ -162,6 +162,28 @@ def feed_links(userData, data, assets):
 			result['links'].append(lnk)
 	return result
 
+@assets(assetManager=assetManager, dbCursor=dbCfg)
+@access(accessManager=AccessManager())
+def feed_quotes(userData, data, assets):
+	cur = assets['dbCursor']
+	query = "SELECT po.id, po.title, po.content from posts po where po.title is not null and po.feed_id=%s"	
+	nameMapping = {
+		'posts': [{
+			0: 'post_id',
+			1: 'title',
+			2: 'content'
+		}]
+	}
+	posts = cur.select(query, [data['feed_id']], nameMapping)
+	result = {'links': []}
+	for p in posts['posts']:
+		html = p['content']
+		soup = bs(html)
+		links = soup.find_all('blockquote')
+		for link in links:			
+			result['links'].append(link)
+	return result
+
 
 SQLworker = SQLGearmanWorker(['localhost:4730'])
 SQLworker.register_task("init_feed", init_feed)
