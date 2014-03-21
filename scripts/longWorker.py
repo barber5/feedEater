@@ -154,7 +154,7 @@ def feed_links(userData, data, assets):
 	}
 	posts = cur.select(query, [data['feed_id']], nameMapping)
 	print len(posts['posts'])
-	result = {'links': []}
+	result = {'links': {}}
 	for p in posts['posts']:
 		html = p['content']
 		soup = bs(html)
@@ -162,8 +162,10 @@ def feed_links(userData, data, assets):
 		for link in links:					
 			if 'href' not in link.attrs:
 				continue
-			print urlparse.urljoin(p['post_url'], link.attrs['href'])
-			result['links'].append(urlparse.urljoin(p['post_url'], link.attrs['href']))
+			url = urlparse.urljoin(p['post_url'], link.attrs['href'])
+			if url not in result['links']:
+				result['links'][url] = 0
+			result['links'][url] += 1
 	return result
 
 @assets(assetManager=assetManager, dbCursor=dbCfg)
