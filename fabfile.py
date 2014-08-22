@@ -7,7 +7,7 @@ from fabric.context_managers import cd
 
 
 
-key_path = '~/git/appserver.pem'
+key_path = 'bundle.pem'
 
 @task
 def init_prod():
